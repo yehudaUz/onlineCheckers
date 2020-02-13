@@ -28,7 +28,7 @@ router.post('/login', async (req, res) => {
         const user = await User.findByCredentials(req.body.username, req.body.password)
         const token = await user.generateAuthToken()
         //res.send({ user, token })
-        res.redirect('start-game.html')
+        res.redirect('game-lobby.html')
     } catch (e) {
         res.status(400).redirect('./loginError.html')
     }
