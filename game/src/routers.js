@@ -11,6 +11,13 @@ require('../../database/mongoose')
 // const routers = require('../../database/routers')
 // console.log(username + " " + password +"\n" + routers)
 
+// app.use(function (req, res) {
+//     if ((req.path.indexOf('html') >= 0)) {
+//         res.redirect('/login');
+//     } 
+// });
+
+
 router.post('/signup', async (req, res) => {
     const user = new User(req.body)
     try {
@@ -23,16 +30,26 @@ router.post('/signup', async (req, res) => {
     }
 })
 
+
 router.post('/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.username, req.body.password)
         const token = await user.generateAuthToken()
-        //res.send({ user, token })
-        res.redirect('game-lobby.html')
+        console.log("token: " + token + "\nUser: " + user);
+        res.cookie('JudaAuthName', user.name)
+        res.cookie('JudaAuthEmail', user.email)
+        res.cookie('JudaAuthToken', token)
+        res.redirect("game-lobby.html")
     } catch (e) {
         res.status(400).redirect('./loginError.html')
     }
 })
+
+// router.get('/game-lobby', async (req, res) => {
+//     console.log(11111111111);
+
+//   res.redirect('/login');
+// })
 
 router.post('/users/logout', auth, async (req, res) => {
     try {
@@ -131,5 +148,18 @@ router.get('/users/:id/avatar', async (req, res) => {
         res.status(404).send()
     }
 })
+
+router.get('*', async (req, res) => {
+    // console.log(1111111111111111111111);
+
+    return res.redirect('/')
+})
+
+router.get(/html$/, async (req, res) => {
+    // console.log("Adasfasgfasgfewsg");
+
+    res.redirect('/')
+})
+
 
 module.exports = router
