@@ -25,12 +25,14 @@ router.post('/signup', async (req, res) => {
         // console.log(JSON.stringify(req.body) + "    " + JSON.stringify(found));
 
         if (found)
-            return res.redirect('./errorPage.html?msg=Same user-name or email already exist!')
+            return res.redirect('./transferPage.html?msg=Same user-name or email already exist!')
 
         await user.save()
         //sendWelcomeEmail(user.email, user.name)
-        const token = await user.generateAuthToken()
-        res.status(201).send({ user, token })
+        //const token = await user.generateAuthToken()
+        //res.status(201).send({ user, token })
+        res.status(201).redirect('./transferPage.html?msg=Signup complete succeefuly!!!')
+
     } catch (e) {
         res.status(400).send(e)
     }
@@ -41,13 +43,13 @@ router.post('/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.username, req.body.password)
         const token = await user.generateAuthToken()
-        console.log("token: " + token + "\nUser: " + user);
-        res.cookie('JudaAuthName', user.name)
-        res.cookie('JudaAuthEmail', user.email)
+        // console.log("token: " + token + "\nUser: " + user);
+        // res.cookie('JudaAuthName', user.name)
+        // res.cookie('JudaAuthEmail', user.email)
         res.cookie('JudaAuthToken', token)
         res.redirect("game-lobby.html")
     } catch (e) {
-        res.status(400).redirect('./errorPage.html?msg=User name or password invalid!')
+        res.status(400).redirect('./transferPage.html?msg=User name or password invalid!')
     }
 })
 

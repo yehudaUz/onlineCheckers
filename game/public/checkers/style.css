@@ -1,0 +1,123 @@
+.white {
+    background-color: rgb(243, 217, 217);
+}
+
+.black {
+    background-color: saddlebrown;
+}
+
+.white,
+.black {
+    height: 9vh;
+    width: 4.5vw;
+    display: -webkit-inline-box;
+    vertical-align: middle;
+    text-align: center
+}
+
+img {
+    width: 85%;
+    height: 85%;
+    display: block;
+    margin: auto;
+}
+
+br {
+    font-size: 0px;
+}
+
+#game {
+    text-align: right;
+    margin: auto;
+    /* height: 100%; */
+    /* width: 100%; */
+    background-color: #afcffe;
+}
+
+#panel {
+    padding-left: 50px;
+    width: 50%;
+    height: 85%;
+    display: table-cell;
+    text-align: left;
+}
+
+#gameBoard {
+    padding-right: 50px;
+    /* width: 50%;
+    max-height: 50%; */
+    display: table-cell;
+    margin: auto;
+    vertical-align: top;
+}
+
+html {
+    height: 100%;
+    width: 100%;
+    font-family: cursive;
+}
+
+body {
+    height: 95%;
+    width: 95%;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    text-decoration: underline;
+    font-size: 2.5vw;
+}
+
+h2 {
+    text-align: center;
+    text-decoration: underline;
+    font-size: 1.25vw;
+}
+
+button {
+    box-sizing: inherit;
+    font: inherit;
+    overflow: visible;
+    text-transform: none;
+    -webkit-appearance: button;
+    padding: 15px 32px;
+    text-align: center;
+    transition-duration: 0.4s;
+    margin: 16px 0 !important;
+    text-decoration: none;
+    font-size: 3vw;
+    cursor: pointer;
+    border-radius: 3px;
+    background-color: white;
+    color: black;
+    border: 2px solid #008CBA;
+}
+
+button {
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+}
+
+button:hover {
+    background-color: rgb(25, 145, 182);
+    color: white;
+}
+
+.blinking {
+    animation: opacity 1s ease-in-out infinite;
+    opacity: 1;
+    color: red;
+}
+
+@keyframes opacity {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0
+    }
+    100% {
+        opacity: 1;
+    }
+}

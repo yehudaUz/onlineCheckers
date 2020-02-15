@@ -1,3 +1,4 @@
+console.clear()
 const express = require('express')
 const app = express();
 var cookieParser = require('cookie-parser');
@@ -30,41 +31,61 @@ const io = socketio(server)
 
 const bearerToken = require('express-bearer-token');
 
+const User = require('../database/models/user')
+
+let usersOnline = []
+
 const parseCookies = (str) => {
-    let output = [];
+    // let output = [];
     let cookies = str.headers.cookie.split('; ')
 
     for (let i = 0; i < cookies.length; i++) {
-        console.log(cookies[i]);
+        //    console.log(cookies[i]);
 
-        if (cookies[i].includes('JudaAuthName') || cookies[i].includes('JudaAuthToken') ||
-            cookies[i].includes('JudaAuthEmail')) {
+        if (/*cookies[i].includes('JudaAuthName') || cookies[i].includes('JudaAuthEmail') ||*/
+            cookies[i].includes('JudaAuthToken')) {
             let name = cookies[i].split("=")[0];
             let val = cookies[i].split("=")[1];
-            output.push({ name, val })
+            // output.push({ name, val })
+            return val;
         }
     }
-    return output;
+    return null;
+    //return output;
 }
 
 
-io.use(function (socket, next) {
-    console.log("qqqqqqqqqqqqqq");
+io.use(async function (socket, next) {
+    const token = parseCookies(socket.handshake);
+    console.log("Token: " + token)
+    const user = await User.findOne({ 'tokens.token': token })
 
-    let handshakeData = socket.handshake;
-    console.log("handshakeData: " + JSON.stringify(handshakeData) + "\n\n")
-    console.log(parseCookies(handshakeData))
-    // make sure the handshake data looks good as before
-    // if error do this:
-    // next(new Error('not authorized'));
-    // else just call next
+    if (!user) {
+        console.log("error authonitcate")
+        socket.emit('error', 'Authontication failure!!')
+        io.sockets.disconnect();
+        io.sockets.close();
+    }
+
     next();
 });
 
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     console.log('New WebSocket connection')
 
-    socket.on('login', (options, callback) => {
+    socket.on('login', async () => {
+        const token = parseCookies(socket.handshake);
+        const user = await User.findOne({ 'tokens.token': token })
+
+        if (user) {
+            const userData = { username: user.name, rank: user.rating }
+            if (!usersOnline.find(oneUser => oneUser.username == userData.username))
+                usersOnline.push(userData)
+        }
+
+        io.emit('usersUpdate', usersOnline)
+
+        // io.emit('setGame',game)
         //console.log("options: " + JSON.stringify(options));
 
         //  console.log("LOGIN:\n" + socket.request.extraHeaders); ///socket.request.headers.cookie
@@ -89,6 +110,11 @@ io.on('connection', (socket) => {
         // callback()
     })
 
+    socket.on('makeMove', ({ from, to }) => {
+        console.log("From: " + JSON.stringify(from) + "           TO: " + JSON.stringify(to));
+
+    })
+
     // socket.on('sendMessage', (message, callback) => {
     //     const user = getUser(socket.id)
     //     const filter = new Filter()
@@ -107,17 +133,17 @@ io.on('connection', (socket) => {
     //     callback()
     // })
 
-    // socket.on('disconnect', () => {
-    //     const user = removeUser(socket.id)
+    socket.on('disconnect', () => {
+        //     const user = removeUser(socket.id)
 
-    //     if (user) {
-    //         io.to(user.room).emit('message', generateMessage('Admin', `${user.username} has left!`))
-    //         io.to(user.room).emit('roomData', {
-    //             room: user.room,
-    //             users: getUsersInRoom(user.room)
-    //         })
-    //     }
-    // })
+        //     if (user) {
+        //         io.to(user.room).emit('message', generateMessage('Admin', `${user.username} has left!`))
+        //         io.to(user.room).emit('roomData', {
+        //             room: user.room,
+        //             users: getUsersInRoom(user.room)
+        //         })
+        //     }
+    })
 })
 
 server.listen(port, () => {

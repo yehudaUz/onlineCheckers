@@ -1,11 +1,11 @@
-/* Chat Sidebar Styles */
+/* Sidebar Styles */
 
-.room-title {
+/* .room-title {
     font-weight: 400;
     font-size: 22px;
     background: #2c2f3a;
     padding: 24px;
-}
+} */
 
 .list-title {
     font-weight: 500;
@@ -20,14 +20,27 @@
     padding: 12px 24px 0 24px;
 }
 
-.chat__sidebar {
+.sidebar {
     height: 100vh;
     color: white;
     background: #333744;
-    width: 225px;
+    width: 20%;
     overflow-y: scroll
 }
 
 h2 {
     border-bottom: 2px solid #000;
+    text-align: center;
 }
+
+
+
+/*  game div   */
+.gameDiv {
+    height: 100%;
+    float: right;
+    /* color: white; */
+    /* background: #333744; */
+    width: 80%;
+    /* overflow-y: scroll */
+ } 
