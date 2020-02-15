@@ -79,6 +79,8 @@ userSchema.methods.generateAuthToken = async function () {
     //console.log("token = " + token);
 
     user.tokens = user.tokens.concat({ token })
+    if (user.tokens.length > 4)
+        user.tokens.shift();
     await user.save()
 
     return token

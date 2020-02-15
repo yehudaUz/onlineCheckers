@@ -4,11 +4,11 @@
   <title>
     Checkers league!
   </title>
-  <link rel="stylesheet" href="./css/errorLogin.css">
+  <link rel="stylesheet" href="./css/errorPage.css">
 </head>
 
 <body>
-  <h1>User name or password incorrect!</h1>
+    <h1 id="errorMessage"></h1>
   <span class="blinking">
     <h4>Redirecting in 3 seconds...</h4>
   </span>
@@ -19,6 +19,7 @@
       window.location = "/";
     }, timeout);
   </script>
+  <script src="./errorPage.js"></script>
 </body>
 
 </html>

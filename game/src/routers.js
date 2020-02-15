@@ -21,6 +21,12 @@ require('../../database/mongoose')
 router.post('/signup', async (req, res) => {
     const user = new User(req.body)
     try {
+        const found = await User.findOne({ $or: [{ name: req.body.name }, { email: req.body.email }] })
+        // console.log(JSON.stringify(req.body) + "    " + JSON.stringify(found));
+
+        if (found)
+            return res.redirect('./errorPage.html?msg=Same user-name or email already exist!')
+
         await user.save()
         //sendWelcomeEmail(user.email, user.name)
         const token = await user.generateAuthToken()
@@ -41,7 +47,7 @@ router.post('/login', async (req, res) => {
         res.cookie('JudaAuthToken', token)
         res.redirect("game-lobby.html")
     } catch (e) {
-        res.status(400).redirect('./loginError.html')
+        res.status(400).redirect('./errorPage.html?msg=User name or password invalid!')
     }
 })
 
