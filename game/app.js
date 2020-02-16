@@ -78,7 +78,7 @@ io.on('connection', async (socket) => {
         const user = await User.findOne({ 'tokens.token': token })
 
         if (user) {
-            const userData = { username: user.name, rank: user.rating }
+            const userData = { username: user.name, rank: user.rating, socketId: socket.id }
             if (!usersOnline.find(oneUser => oneUser.username == userData.username))
                 usersOnline.push(userData)
         }
@@ -115,6 +115,12 @@ io.on('connection', async (socket) => {
 
     })
 
+    socket.on('reqToStartGameWith', (userName) => {
+        const from =  usersOnline.find(oneUser => oneUser.socketId == socket.id).username
+        console.log("Server side from: " + from);
+        console.log("Server side to: " + userName);
+
+    }, "some error occured")
     // socket.on('sendMessage', (message, callback) => {
     //     const user = getUser(socket.id)
     //     const filter = new Filter()

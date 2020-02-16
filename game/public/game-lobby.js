@@ -19,6 +19,17 @@ socket.on('usersUpdate', (users) => {
         users
     })
     document.querySelector('#sidebar').innerHTML = html
+    let allUsers = document.querySelectorAll('li');
+    console.log(allUsers);
+    for (let i = 0; i < allUsers.length; i++)
+        allUsers[i].addEventListener("click", (info) => {
+            console.log(info.toElement.innerText.split(' ')[0]);
+            const userName = info.toElement.innerText.split(' ')[0];
+            socket.emit('reqToStartGameWith', userName, (error) => {
+                if (error)
+                    alert(error)
+            })
+        })
 })
 
 socket.on('error', (errorMsg) => {

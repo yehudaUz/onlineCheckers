@@ -47,18 +47,21 @@ class Graphics {
         messages.id = "messages";
         messages.textContent = "";
         gameBoardDiv.appendChild(messages);
-        let changeGameBoardByScreenResolution = () => {
-            let Wsquares = document.getElementsByClassName('white');
-            let Bsquares = document.getElementsByClassName('black');
-            const height = screen.width / screen.height * Wsquares[0].style.width;
-            console.log("width: " + Wsquares[0].style.width + "      Height: " + height);
-            
-            for (let i = 0; i < Wsquares.length; i++) {
-                Wsquares[i].style.height = screen.width / screen.height * Wsquares[i].style.width;
-                Bsquares[i].style.height = screen.width / screen.height * Wsquares[i].style.width;
-            }
-        }
-        changeGameBoardByScreenResolution()
+        // let changeGameBoardByScreenResolution = () => {
+        //     let Wsquares = document.getElementsByClassName('white');
+        //     let Bsquares = document.getElementsByClassName('black');
+
+        //     const height = screen.width / screen.height * 4.5;
+        //     console.log(height);
+
+        //     console.log("width: " + Wsquares[0].style.width + "      Height: " + height);
+
+        //     for (let i = 0; i < Wsquares.length; i++) {
+        //         Wsquares[i].style.height = 4.5+"vw"//height + "vh"//screen.width / screen.height * Wsquares[i].style.width;
+        //         Bsquares[i].style.height = 4.5+"vw"//height + "vh"//screen.width / screen.height * Wsquares[i].style.width;
+        //     }
+        // }
+        // changeGameBoardByScreenResolution()
         this.renderMessages(["Welocme!!!"]);
     }
     renderMovingMouseDown(currentImg, mouseMoveEvent) {
