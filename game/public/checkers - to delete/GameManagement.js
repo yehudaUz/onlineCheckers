@@ -69,25 +69,30 @@ class GameManagement {
                 currentImg.removeAttribute('style');
 
                 if (elements[1] != null) {
-                    let legalMoveState = this.checkersLogic.isMoveTotalLegal(from, to);
-                    if (legalMoveState.is) {
-                        /////////////////////////////////////////////
-                        socket.emit('makeMove', { from, to }, (error) => {
-                            if (error) {
-                                alert(error)
-                                location.href = '/'
-                            }
-                        })
-
-                        this.boardManagement.makeMove(from, to, legalMoveState);
-                        this.checkersLogic.checkAndUpadateMiddleSequenceState(legalMoveState, to)
-                        if (!legalMoveState.inMiddleSequence.is) {
-                            this.checkersLogic.isBlackTurn = !this.checkersLogic.isBlackTurn;
-                            this.boardManagement.updateKingsIfNecessary(to);
+                    socket.emit('makeMove', { from, to }, (error) => {
+                        if (error) {
+                            alert(error)
+                            location.href = '/'
                         }
-                    }
+                        let legalMoveState = this.checkersLogic.isMoveTotalLegal(from, to);
+                        if (legalMoveState.is) {
+                            /////////////////////////////////////////////
 
-                    this.graphics.renderMessages(legalMoveState.message);
+
+                            this.boardManagement.makeMove(from, to, legalMoveState);
+                            this.checkersLogic.checkAndUpadateMiddleSequenceState(legalMoveState, to)
+                            if (!legalMoveState.inMiddleSequence.is) {
+                                this.checkersLogic.isBlackTurn = !this.checkersLogic.isBlackTurn;
+                                this.boardManagement.updateKingsIfNecessary(to);
+                            }
+                        }
+
+                        this.graphics.renderMessages(legalMoveState.message);
+                        this.graphics.renderPieces();
+                        addEventsToNewPics();
+                        handleEndGame(this.checkersLogic.getEndGameState());
+                    })
+
                 }
 
                 this.graphics.renderPieces();

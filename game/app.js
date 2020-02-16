@@ -36,22 +36,16 @@ const User = require('../database/models/user')
 let usersOnline = []
 
 const parseCookies = (str) => {
-    // let output = [];
     let cookies = str.headers.cookie.split('; ')
 
     for (let i = 0; i < cookies.length; i++) {
-        //    console.log(cookies[i]);
-
-        if (/*cookies[i].includes('JudaAuthName') || cookies[i].includes('JudaAuthEmail') ||*/
-            cookies[i].includes('JudaAuthToken')) {
+        if (cookies[i].includes('JudaAuthToken')) {
             let name = cookies[i].split("=")[0];
             let val = cookies[i].split("=")[1];
-            // output.push({ name, val })
             return val;
         }
     }
     return null;
-    //return output;
 }
 
 
@@ -83,72 +77,48 @@ io.on('connection', async (socket) => {
                 usersOnline.push(userData)
         }
 
+        console.log("Us: " + JSON.stringify(usersOnline));
+
         io.emit('usersUpdate', usersOnline)
-
-        // io.emit('setGame',game)
-        //console.log("options: " + JSON.stringify(options));
-
-        //  console.log("LOGIN:\n" + socket.request.extraHeaders); ///socket.request.headers.cookie
-        // for (let i = 0; i < socket.request.headers.length; i++)
-        //     console.log(socket.request.headers[i])
-
-        // const { error, user } = addUser({ id: socket.id, ...options })
-
-        // if (error) {
-        //     return callback(error)
-        // }
-
-        // socket.join(user.room)
-
-        // socket.emit('message', generateMessage('Admin', 'Welcome!'))
-        // socket.broadcast.to(user.room).emit('message', generateMessage('Admin', `${user.username} has joined!`))
-        // io.to(user.room).emit('roomData', {
-        //     room: user.room,
-        //     users: getUsersInRoom(user.room)
-        // })
-
-        // callback()
     })
 
-    socket.on('makeMove', ({ from, to }) => {
+    socket.on('makeMove', ({ from, to }, callback) => {
         console.log("From: " + JSON.stringify(from) + "           TO: " + JSON.stringify(to));
-
+        callback()
     })
 
-    socket.on('reqToStartGameWith', (userName) => {
-        const from =  usersOnline.find(oneUser => oneUser.socketId == socket.id).username
+    socket.on('sendReqToStartGameWith', (userName) => {
+        const from = usersOnline.find(oneUser => oneUser.socketId == socket.id)
         console.log("Server side from: " + from);
         console.log("Server side to: " + userName);
+        const to = usersOnline.find(oneUser => oneUser.username == userName);
 
-    }, "some error occured")
-    // socket.on('sendMessage', (message, callback) => {
-    //     const user = getUser(socket.id)
-    //     const filter = new Filter()
+        io.to(to.socketId).emit('ReqToStartGameWith', { username: from.username, rank: from.rank })
+    })
 
-    //     if (filter.isProfane(message)) {
-    //         return callback('Profanity is not allowed!')
-    //     }
+    socket.on('resToGameInvite', ({ fromUser, res }) => {
+        console.log("REs " + res);
+        const from = usersOnline.find(oneUser => oneUser.username == fromUser.username)
+        const to = usersOnline.find(oneUser => oneUser.socketId == socket.id)
 
-    //     io.to(user.room).emit('message', generateMessage(user.username, message))
-    //     callback()
-    // })
+        if (res) {
+            
+        }
+        else {
+            io.to(from.socketId).emit('reqCanceld', to.username)
+        }
+    })
 
-    // socket.on('sendLocation', (coords, callback) => {
-    //     const user = getUser(socket.id)
-    //     io.to(user.room).emit('locationMessage', generateLocationMessage(user.username, `https://google.com/maps?q=${coords.latitude},${coords.longitude}`))
-    //     callback()
-    // })
+    socket.on('disconnect', (callback) => {
+        const userLeftIndex = usersOnline.findIndex((oneUser) => {
+            return oneUser.socketId == socket.id
+        })
+        if (userLeftIndex > -1) {
+            usersOnline.splice(userLeftIndex, 1)
+            io.emit('usersUpdate', usersOnline)
 
-    socket.on('disconnect', () => {
-        //     const user = removeUser(socket.id)
+        }
 
-        //     if (user) {
-        //         io.to(user.room).emit('message', generateMessage('Admin', `${user.username} has left!`))
-        //         io.to(user.room).emit('roomData', {
-        //             room: user.room,
-        //             users: getUsersInRoom(user.room)
-        //         })
-        //     }
     })
 })
 

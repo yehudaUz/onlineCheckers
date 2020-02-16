@@ -89,15 +89,15 @@ class CheckersLogic {
             (mustEatState.is && (mustEatState.move).filter(pos => (pos.fromX == from.x &&
                 pos.fromY == from.y && pos.toX == to.x && pos.toY == to.y)).length > 0))
             if (legalMoveState.legal && (!legalMoveState.inMiddleSequence.is ||
-                    (legalMoveState.inMiddleSequence.is && from.x == legalMoveState.inMiddleSequence.from.x &&
-                        from.y == legalMoveState.inMiddleSequence.from.y))) {
+                (legalMoveState.inMiddleSequence.is && from.x == legalMoveState.inMiddleSequence.from.x &&
+                    from.y == legalMoveState.inMiddleSequence.from.y))) {
                 legalMoveState.is = true;
                 //update 15 moves
                 updateFifteenMoves(this, from);
                 return legalMoveState
             }
         if ((mustEatState.is && !(mustEatState.move).filter(pos => (pos.fromX == from.x &&
-                pos.fromY == from.y && pos.toX == to.x && pos.toY == to.y)).length > 0))
+            pos.fromY == from.y && pos.toX == to.x && pos.toY == to.y)).length > 0))
             legalMoveState.message.push("Must Eat!");
         if (legalMoveState.inMiddleSequence.is)
             legalMoveState.message.push("Must Eat! (continue the sequence)");
@@ -117,7 +117,7 @@ class CheckersLogic {
         for (let i = parseInt(from.x) + stepI, j = parseInt(from.y) + stepJ; this.condition(parseInt(i), parseInt(to.x), parseInt(stepI)) && this.condition(j, to.y, stepJ); i += stepI, j += stepJ) {
             if (this.board[j][i] != null) {
                 if (this.board[j][i].isBlack == this.isBlackTurn || (this.board[j][i].isBlack != this.isBlackTurn &&
-                        this.board[j + stepJ][i + stepI] != null && this.board[j + stepJ][i + stepI].isBlack != this.isBlackTurn))
+                    this.board[j + stepJ][i + stepI] != null && this.board[j + stepJ][i + stepI].isBlack != this.isBlackTurn))
                     return legalMoveState;
                 if (this.board[j][i].isBlack != this.isBlackTurn)
                     legalMoveState.arrOfPiecesToDelete.push({ x: i, y: j });
@@ -135,7 +135,7 @@ class CheckersLogic {
     }
 
 
-    isPlayerCanEatMore = (from) => {
+    isPlayerCanEatMore(from) {
         for (let k = 0; k < this.board.length; k++) {
             for (let l = 0; l < this.board.length; l++) {
                 let to = { x: l, y: k };
@@ -274,4 +274,14 @@ let isNoPiecesleft = (ths) => {
     else
         ths.endGamestate.isBlack = true;
     return true;
+}
+
+module.exports = {
+    CheckersLogic,
+    updateFifteenMoves,
+    getMoveDirection,
+    isDraw,
+    isWin,
+    playerPiecesAllBlocked,
+    isNoPiecesleft
 }

@@ -66,8 +66,8 @@ class Graphics {
     }
     renderMovingMouseDown(currentImg, mouseMoveEvent) {
         currentImg.style.position = "absolute";
-        currentImg.style.height = "7.65vh";
-        currentImg.style.width = "3.825vw";
+       // currentImg.style.height = "7.65vh";
+       //currentImg.style.width = "3.825vw";
         document.querySelector("html").appendChild(currentImg);
         currentImg.style.left = mouseMoveEvent.clientX - currentImg.width / 2 + 'px';
         currentImg.style.top = mouseMoveEvent.clientY - currentImg.height / 2 + 'px';

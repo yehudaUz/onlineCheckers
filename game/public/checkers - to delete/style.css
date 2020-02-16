@@ -8,8 +8,8 @@
 
 .white,
 .black {
-    height: 4.5vw;
-    width: 4.5vw;
+    height: 5vw;
+    width: 5vw;
     display: -webkit-inline-box;
     vertical-align: middle;
     text-align: center
