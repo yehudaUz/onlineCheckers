@@ -33,9 +33,8 @@ h2 {
     text-align: center;
 }
 
-
-
 /*  game div   */
+
 .gameDiv {
     height: 100%;
     float: right;
@@ -43,4 +42,10 @@ h2 {
     /* background: #333744; */
     width: 80%;
     /* overflow-y: scroll */
- } 
+}
+
+.embeddedPage {
+    width: 78%;
+    height: 98%;
+    float: right;
+}

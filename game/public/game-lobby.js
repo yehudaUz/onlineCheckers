@@ -69,13 +69,22 @@ socket.on('reqCanceld', (userName) => {
 //     //data="http://localhost:3000/checkers/index.html"
 // }
 
-
+let suka = 0
 socket.on('startGame', ({ color, names, roomNumber }) => {
+    suka++
+    if (suka > 1)
+        return
     //console.log("client: " + JSON.stringify(from) + "   " + JSON.stringify(to) + "   " + JSON.stringify(roomNumber));
-    document.getElementById("gameDiv").innerHTML = '<object id="embeddedPage" type="text/html" data="http://localhost:3000/checkers/index.html"  class="gameDiv"></object>';
+    // document.getElementById("gameDiv").innerHTML = '<object id="embeddedPage" type="text/html" data="http://localhost:3000/checkers/index.html"  class="gameDiv"></object>';
+    let ifrm = document.createElement('iframe');
+    ifrm.setAttribute('src', "http://localhost:3000/checkers/index.html");
+    document.getElementById("gameDiv").appendChild(ifrm)
+    ifrm.className = 'embeddedPage'
+    //document.getElementById("gameDiv").innerHTML = 
+
     setTimeout(() => {
-        let page = document.querySelector("#embeddedPage");
-        let htmlDocument = page.contentDocument;
+        let page = document.getElementsByClassName("embeddedPage");
+        let htmlDocument = page.contentWindow ? page.contentWindow.document : page.contentDocument //page.contentDocument || page.contentWindow.document//page.contentDocument;
         //htmlDocument.getElementsByClassName("black")
         const nameTitle = htmlDocument.createElement('h3')
         nameTitle.innerText = names[0]
