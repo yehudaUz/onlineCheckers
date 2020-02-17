@@ -53,6 +53,63 @@ socket.on('reqCanceld', (userName) => {
     alert("Unfourtenly " + userName + " is decline your offer to play :(\nTry with another user :)")
 })
 
+// function load_home(callback) {
+//     return new Promise((resolve, reject) => {
+//         document.getElementById("gameDiv").innerHTML = '<object type="text/html" data="http://localhost:3000/checkers/index.html"  class="gameDiv"></object>';
+//         const tryAgain = () => {
+//             if (document.getElementById("gameBoard")) {
+//                 console.log("dd " + document.getElementById("gameBoard"));
+//                 return resolve()
+//             }
+//             else
+//                 tryAgain()
+//         }
+//         tryAgain()
+//     })
+//     //data="http://localhost:3000/checkers/index.html"
+// }
+
+
+socket.on('startGame', ({ color, names, roomNumber }) => {
+    //console.log("client: " + JSON.stringify(from) + "   " + JSON.stringify(to) + "   " + JSON.stringify(roomNumber));
+    document.getElementById("gameDiv").innerHTML = '<object id="embeddedPage" type="text/html" data="http://localhost:3000/checkers/index.html"  class="gameDiv"></object>';
+    setTimeout(() => {
+        let page = document.querySelector("#embeddedPage");
+        let htmlDocument = page.contentDocument;
+        //htmlDocument.getElementsByClassName("black")
+        const nameTitle = htmlDocument.createElement('h3')
+        nameTitle.innerText = names[0]
+        nameTitle.style.textAlign = 'left'
+
+        const nameTitle2 = htmlDocument.createElement('h3')
+        nameTitle2.innerText = names[1]
+        nameTitle2.style.textAlign = 'left'
+        //afteer panel and game
+
+        const panel = htmlDocument.getElementById("panel")
+        const game = htmlDocument.getElementById("game")
+
+        if (color == "white") {
+            panel.after(nameTitle)
+            game.prepend(nameTitle2)
+        } else {
+            panel.after(nameTitle2)
+            game.prepend(nameTitle)
+        }
+        //console.log(parentDiv);
+
+        //console.log("dd " + JSON.stringify(htmlDocument)); //document.getElementById("gameBoard"));
+    }, 1000);
+
+
+
+
+    // // Begin test case [ 1 ] : Existing childElement (all works correctly)
+    // let sp2 = document.getElementById("gameBoard")
+    //parentDiv.insertBefore(newNode, sp2)
+
+})
+
 socket.emit('login', (error) => {
     if (error) {
         alert(error)
@@ -61,9 +118,6 @@ socket.emit('login', (error) => {
 })
 
 
-function load_home() {
-    document.getElementById("gameDiv").innerHTML = '<object type="text/html" data="../../checkers/index.html"  class="gameDiv"></object>';
-    //data="http://localhost:3000/checkers/index.html"
-}
 
-load_home()
+
+

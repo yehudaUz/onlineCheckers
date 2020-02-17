@@ -34,6 +34,7 @@ const bearerToken = require('express-bearer-token');
 const User = require('../database/models/user')
 
 let usersOnline = []
+let roomNumber = 0;
 
 const parseCookies = (str) => {
     let cookies = str.headers.cookie.split('; ')
@@ -102,7 +103,16 @@ io.on('connection', async (socket) => {
         const to = usersOnline.find(oneUser => oneUser.socketId == socket.id)
 
         if (res) {
-            
+            socket.join(roomNumber)
+            io.sockets.connected[from.socketId].join(roomNumber);
+            io.to(from.socketId).emit('startGame', { color: "white", names: [from.username, to.username] })
+            io.to(to.socketId).emit('startGame', { color: "black", names: [to.username, from.username] })
+            // io.to(roomNumber).emit('startGame', {
+            //     "white",
+            //     to,
+            //     roomNumber,
+            // })
+            roomNumber++;
         }
         else {
             io.to(from.socketId).emit('reqCanceld', to.username)

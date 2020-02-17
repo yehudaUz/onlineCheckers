@@ -276,12 +276,22 @@ let isNoPiecesleft = (ths) => {
     return true;
 }
 
-module.exports = {
-    CheckersLogic,
-    updateFifteenMoves,
-    getMoveDirection,
-    isDraw,
-    isWin,
-    playerPiecesAllBlocked,
-    isNoPiecesleft
-}
+// module.exports = {
+//     CheckersLogic,
+//     updateFifteenMoves,
+//     getMoveDirection,
+//     isDraw,
+//     isWin,
+//     playerPiecesAllBlocked,
+//     isNoPiecesleft
+// }
+
+// export default {
+//     CheckersLogic,
+//     updateFifteenMoves,
+//     getMoveDirection,
+//     isDraw,
+//     isWin,
+//     playerPiecesAllBlocked,
+//     isNoPiecesleft
+// }
