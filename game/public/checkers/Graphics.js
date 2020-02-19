@@ -66,8 +66,8 @@ class Graphics {
     }
     renderMovingMouseDown(currentImg, mouseMoveEvent) {
         currentImg.style.position = "absolute";
-       // currentImg.style.height = "7.65vh";
-       //currentImg.style.width = "3.825vw";
+        currentImg.style.height = "5vw";
+        currentImg.style.width = "5vw";
         document.querySelector("html").appendChild(currentImg);
         currentImg.style.left = mouseMoveEvent.clientX - currentImg.width / 2 + 'px';
         currentImg.style.top = mouseMoveEvent.clientY - currentImg.height / 2 + 'px';
@@ -76,9 +76,12 @@ class Graphics {
         for (let i = 0; i < messages.length; i++) {
             document.getElementById("messages").innerText = messages[i];
             document.getElementById("messages").classList = "blinking";
-            document.getElementById("messages").style.visibility = 'unset';
+            document.getElementById("messages").style.visibility = '';
+            document.getElementById("messages").style.display = '';
+            document.getElementById("messages").style.textAlign = '';
             sleep(2000).then(() => {
                 document.getElementById("messages").style.visibility = 'hidden';
+                document.getElementById("messages").style.display = 'none';
             })
         }
         messages = [];

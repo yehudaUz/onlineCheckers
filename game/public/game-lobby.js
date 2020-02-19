@@ -84,7 +84,7 @@ socket.on('startGame', ({ color, names, roomNumber }) => {
 
     setTimeout(() => {
         let page = document.getElementsByClassName("embeddedPage");
-        let htmlDocument = page.contentWindow ? page.contentWindow.document : page.contentDocument //page.contentDocument || page.contentWindow.document//page.contentDocument;
+        let htmlDocument = page[0].contentWindow ? page[0].contentWindow.document : page[0].contentDocument //page.contentDocument || page.contentWindow.document//page.contentDocument;
         //htmlDocument.getElementsByClassName("black")
         const nameTitle = htmlDocument.createElement('h3')
         nameTitle.innerText = names[0]
