@@ -4,8 +4,8 @@ const socket = io()
 class GameManagement {
     constructor() {
         this.boardManagement = new BoardManagement();
-        this.graphics = new Graphics(this.boardManagement.symbolicBoard);
-        this.checkersLogic = new CheckersLogic(this.boardManagement.symbolicBoard, this.graphics);
+        this.graphics = new Graphics();
+        //this.checkersLogic = new CheckersLogic(this.boardManagement.symbolicBoard, this.graphics);
     }
 
     play() {
@@ -33,24 +33,26 @@ class GameManagement {
         }
 
         let addEventsToButtons = () => {
-            let endGameState = this.checkersLogic.getEndGameState();
-            document.getElementById("new game!!").addEventListener("click", () => {
-                if (confirm("Are u sure u want to start a new game???"))
-                    window.location.reload(false);
-            });
-            document.getElementById("offer draw").addEventListener("click", () => {
-                if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
-                    endGameState.draw = true;
-                    handleEndGame(endGameState);
-                }
-            });
-            document.getElementById("resign game").addEventListener("click", () => {
-                if (confirm("Are u sure u want to loose the game?????")) {
-                    endGameState.win = true;
-                    endGameState.isBlack = !this.checkersLogic.isBlackTurn;
-                    handleEndGame(endGameState);
-                }
-            });
+            //let endGameState = this.checkersLogic.getEndGameState();
+            socket.emit('getEndGameState', (endGameState) => {
+                document.getElementById("new game!!").addEventListener("click", () => {
+                    if (confirm("Are u sure u want to start a new game???"))
+                        window.location.reload(false);
+                });
+                document.getElementById("offer draw").addEventListener("click", () => {
+                    if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
+                        endGameState.draw = true;
+                        handleEndGame(endGameState);
+                    }
+                });
+                document.getElementById("resign game").addEventListener("click", () => {
+                    if (confirm("Are u sure u want to loose the game?????")) {
+                        endGameState.win = true;
+                        endGameState.isBlack = !this.checkersLogic.isBlackTurn;
+                        handleEndGame(endGameState);
+                    }
+                });
+            })
         }
 
         let addEventMouseUpImg = (img) => {
@@ -113,6 +115,13 @@ class GameManagement {
         let currentImg, cureentDiv, mouseDown = false;
         addEventsToNewPics();
         addEventsToButtons();
+        socket.emit('gameConfigured',this.boardManagement.getBoard(), (error) => {
+            if (error) {
+                alert(error)
+                location.href = '/'
+            }
+        })
+        
     }
 }
 

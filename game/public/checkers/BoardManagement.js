@@ -1,4 +1,5 @@
 "use strict";
+//const CheckersPiece = require('./CheckersPiece')
 const initialBoard = [
     0, 1, 0, 1, 0, 1, 0, 1,
     1, 0, 1, 0, 1, 0, 1, 0,
@@ -16,8 +17,21 @@ class BoardManagement {
         this.symbolicBoard = this.setSymbolicBoard(initialBoard);
     }
 
+    setBoardSize(arr) {
+        let length;
+        if (arr[0].constructor === Array)
+            length = arr[0].length;
+        else
+            length = Math.sqrt(arr.length);
+        let newArr = new Array(length);
+        for (let i = 0; i < length; i++) {
+            newArr[i] = new Array(length);
+        }
+        return newArr;
+    }
+
     setSymbolicBoard(initialBoard) {
-        let sb = setBoardSize(initialBoard);
+        let sb = this.setBoardSize(initialBoard);
         for (let k = 0; k < sb.length; k++) {
             for (let l = 0; l < sb.length; l++) {
                 sb[k][l] = (initialBoard[l + k * sb.length] == 1) ? new CheckersPiece(true, false) : sb[k][l];
@@ -50,4 +64,10 @@ class BoardManagement {
                 this.symbolicBoard[pos.y][pos.x] = null;
             }
     }
+
+    getBoard() {
+        return this.symbolicBoard;
+    }
 }
+
+//module.exports = BoardManagement

@@ -10,3 +10,5 @@ class CheckersPiece {
         this.img.src = (!isBlack && isKing) ? "pics/redKing.png" : this.img.src;
     }
 }
+
+//module.exports = CheckersPiece

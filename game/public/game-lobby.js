@@ -106,7 +106,10 @@ socket.on('startGame', ({ color, names, roomNumber }) => {
             game.prepend(nameTitle)
         }
         //console.log(parentDiv);
-
+        
+ 
+        
+        
         //console.log("dd " + JSON.stringify(htmlDocument)); //document.getElementById("gameBoard"));
     }, 1000);
 

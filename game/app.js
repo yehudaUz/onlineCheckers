@@ -33,6 +33,14 @@ const bearerToken = require('express-bearer-token');
 
 const User = require('../database/models/user')
 
+const Checkers = require('./src/checkers/CheckersLogic.js')
+const BoardManagement = require('./public/checkers/BoardManagement')
+
+let checkersLogic = new Checkers()
+//let boardManagement = new BoardManagement()
+//console.log(JSON.stringify(checkersLogic));
+
+
 let usersOnline = []
 let roomNumber = 0;
 
@@ -88,6 +96,16 @@ io.on('connection', async (socket) => {
         callback()
     })
 
+    socket.on('getEndGameState', (callback) => {
+        // console.log(JSON.stringify(checkersLogic))
+        console.log("socket.rooms[0]: " +JSON.stringify(socket.rooms[0]));
+        
+        const endGameState = checkersLogic.getEndGameState(socket.rooms[0])
+
+            //socket.id)
+        callback(endGameState)
+    })
+
     socket.on('sendReqToStartGameWith', (userName) => {
         const from = usersOnline.find(oneUser => oneUser.socketId == socket.id)
         console.log("Server side from: " + from);
@@ -107,6 +125,8 @@ io.on('connection', async (socket) => {
             io.sockets.connected[from.socketId].join(roomNumber);
             io.to(from.socketId).emit('startGame', { color: "white", names: [from.username, to.username] })
             io.to(to.socketId).emit('startGame', { color: "black", names: [to.username, from.username] })
+            JSON.stringify(socket.rooms[0])
+            //checkersLogic.setNewRoom(roomNumber, new BoardManagement().setSymbolicBoard())
             // io.to(roomNumber).emit('startGame', {
             //     "white",
             //     to,
@@ -117,6 +137,10 @@ io.on('connection', async (socket) => {
         else {
             io.to(from.socketId).emit('reqCanceld', to.username)
         }
+    })
+
+    socket.on('gameConfigured', (board) => {
+        checkersLogic.setNewRoom(roomNumber, board)
     })
 
     socket.on('disconnect', (callback) => {
