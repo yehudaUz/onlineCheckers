@@ -60,7 +60,6 @@ const parseCookies = (str) => {
 
 io.use(async function (socket, next) {
     const token = parseCookies(socket.handshake);
-    console.log("Token: " + token)
     const user = await User.findOne({ 'tokens.token': token })
 
     if (!user) {
@@ -86,7 +85,7 @@ io.on('connection', async (socket) => {
                 usersOnline.push(userData)
         }
 
-        console.log("Us: " + JSON.stringify(usersOnline));
+        // console.log("Us: " + JSON.stringify(usersOnline));
 
         io.emit('usersUpdate', usersOnline)
     })
@@ -96,43 +95,36 @@ io.on('connection', async (socket) => {
         callback()
     })
 
-    socket.on('getEndGameState', (callback) => {
-        // console.log(JSON.stringify(checkersLogic))
-        console.log("socket.rooms[0]: " +JSON.stringify(socket.rooms[0]));
-        
-        const endGameState = checkersLogic.getEndGameState(socket.rooms[0])
+    socket.on('getEndGameState',(id, callback) => {
+        console.log("ID: " + id)//JSON.stringify(checkersLogic))
+        console.log("getEndGameState socket.rooms: " + JSON.stringify(socket.rooms));
 
-            //socket.id)
+        const endGameState = checkersLogic.getEndGameState(socket.rooms)
+
+        //socket.id)
         callback(endGameState)
     })
 
     socket.on('sendReqToStartGameWith', (userName) => {
         const from = usersOnline.find(oneUser => oneUser.socketId == socket.id)
-        console.log("Server side from: " + from);
-        console.log("Server side to: " + userName);
         const to = usersOnline.find(oneUser => oneUser.username == userName);
 
         io.to(to.socketId).emit('ReqToStartGameWith', { username: from.username, rank: from.rank })
     })
 
     socket.on('resToGameInvite', ({ fromUser, res }) => {
-        console.log("REs " + res);
         const from = usersOnline.find(oneUser => oneUser.username == fromUser.username)
         const to = usersOnline.find(oneUser => oneUser.socketId == socket.id)
 
         if (res) {
             socket.join(roomNumber)
-            io.sockets.connected[from.socketId].join(roomNumber);
-            io.to(from.socketId).emit('startGame', { color: "white", names: [from.username, to.username] })
-            io.to(to.socketId).emit('startGame', { color: "black", names: [to.username, from.username] })
-            JSON.stringify(socket.rooms[0])
-            //checkersLogic.setNewRoom(roomNumber, new BoardManagement().setSymbolicBoard())
-            // io.to(roomNumber).emit('startGame', {
-            //     "white",
-            //     to,
-            //     roomNumber,
-            // })
-            roomNumber++;
+            io.sockets.connected[from.socketId].join(roomNumber, () => {
+                io.to(from.socketId).emit('startGame', { color: "white", names: [from.username, to.username], id: from.socketId })
+                io.to(to.socketId).emit('startGame', { color: "black", names: [to.username, from.username], id: to.socketId })
+                console.log("Id1: " + socket.id + "Rooms: " + JSON.stringify(socket.rooms))
+                console.log("Id2: " + from.socketId + "Rooms: " + JSON.stringify(io.sockets.connected[from.socketId].rooms))
+                roomNumber++;
+            });
         }
         else {
             io.to(from.socketId).emit('reqCanceld', to.username)

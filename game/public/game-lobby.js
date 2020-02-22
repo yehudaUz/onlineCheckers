@@ -70,19 +70,20 @@ socket.on('reqCanceld', (userName) => {
 // }
 
 let suka = 0
-socket.on('startGame', ({ color, names, roomNumber }) => {
+socket.on('startGame', ({ color, names, id }) => {
     suka++
     if (suka > 1)
         return
     //console.log("client: " + JSON.stringify(from) + "   " + JSON.stringify(to) + "   " + JSON.stringify(roomNumber));
     // document.getElementById("gameDiv").innerHTML = '<object id="embeddedPage" type="text/html" data="http://localhost:3000/checkers/index.html"  class="gameDiv"></object>';
-    let ifrm = document.createElement('iframe');
-    ifrm.setAttribute('src', "http://localhost:3000/checkers/index.html");
-    document.getElementById("gameDiv").appendChild(ifrm)
-    ifrm.className = 'embeddedPage'
+    let iframe = document.createElement('iframe');
+    iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
+    document.getElementById("gameDiv").appendChild(iframe)
+    iframe.className = 'embeddedPage'
+    iframe.id = id
     //document.getElementById("gameDiv").innerHTML = 
 
-    setTimeout(() => {
+    iframe.onload = function () {  // before setting 'src'
         let page = document.getElementsByClassName("embeddedPage");
         let htmlDocument = page[0].contentWindow ? page[0].contentWindow.document : page[0].contentDocument //page.contentDocument || page.contentWindow.document//page.contentDocument;
         //htmlDocument.getElementsByClassName("black")
@@ -106,12 +107,12 @@ socket.on('startGame', ({ color, names, roomNumber }) => {
             game.prepend(nameTitle)
         }
         //console.log(parentDiv);
-        
- 
-        
-        
+
+
+
+
         //console.log("dd " + JSON.stringify(htmlDocument)); //document.getElementById("gameBoard"));
-    }, 1000);
+    }
 
 
 
