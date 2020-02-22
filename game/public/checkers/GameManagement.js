@@ -34,7 +34,8 @@ class GameManagement {
 
         let addEventsToButtons = () => {
             //let endGameState = this.checkersLogic.getEndGameState();
-            socket.emit('getEndGameState', (endGameState) => {
+            let id = document.querySelector("iframe").id
+            socket.emit('getEndGameState', id, (endGameState) => {
                 document.getElementById("new game!!").addEventListener("click", () => {
                     if (confirm("Are u sure u want to start a new game???"))
                         window.location.reload(false);
@@ -115,13 +116,13 @@ class GameManagement {
         let currentImg, cureentDiv, mouseDown = false;
         addEventsToNewPics();
         addEventsToButtons();
-        socket.emit('gameConfigured',this.boardManagement.getBoard(), (error) => {
+        socket.emit('gameConfigured', this.boardManagement.getBoard(), (error) => {
             if (error) {
                 alert(error)
                 location.href = '/'
             }
         })
-        
+
     }
 }
 
