@@ -97,7 +97,7 @@ io.on('connection', async (socket) => {
 
     socket.on('getEndGameState',(id, callback) => {
         console.log("ID: " + id)//JSON.stringify(checkersLogic))
-        console.log("getEndGameState socket.rooms: " + JSON.stringify(socket.rooms));
+        console.log("getEndGameState socket.rooms: " + JSON.stringify(socket.rooms) + "   socket.id" + socket.id); dasdasdasdasdasdasdasdasdasdadasd\\ */
 
         const endGameState = checkersLogic.getEndGameState(socket.rooms)
 

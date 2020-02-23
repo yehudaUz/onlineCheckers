@@ -80,13 +80,25 @@ socket.on('startGame', ({ color, names, id }) => {
     iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
     document.getElementById("gameDiv").appendChild(iframe)
     iframe.className = 'embeddedPage'
-    iframe.id = id
-    //document.getElementById("gameDiv").innerHTML = 
+
+    let socketID = document.createElement("div")
+    socketID.id = id
+    socketID.className = "socketID"
+   // document.body.appendChild(socketID)
+    window.parent.document.getElementById('gameDiv').appendChild(socketID)
 
     iframe.onload = function () {  // before setting 'src'
         let page = document.getElementsByClassName("embeddedPage");
         let htmlDocument = page[0].contentWindow ? page[0].contentWindow.document : page[0].contentDocument //page.contentDocument || page.contentWindow.document//page.contentDocument;
         //htmlDocument.getElementsByClassName("black")
+
+        // let socketID = htmlDocument.createElement("div")
+        // socketID.id = id
+        // socketID.className = "socketID"
+    
+        //htmlDocument.body.appendChild(socketID);
+        // perent.appendChild(socketID);
+
         const nameTitle = htmlDocument.createElement('h3')
         nameTitle.innerText = names[0]
         nameTitle.style.textAlign = 'left'
@@ -107,7 +119,7 @@ socket.on('startGame', ({ color, names, id }) => {
             game.prepend(nameTitle)
         }
         //console.log(parentDiv);
-
+      //  game.after(socketID)
 
 
 

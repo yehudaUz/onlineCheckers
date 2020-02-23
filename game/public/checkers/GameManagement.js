@@ -34,26 +34,37 @@ class GameManagement {
 
         let addEventsToButtons = () => {
             //let endGameState = this.checkersLogic.getEndGameState();
-            let id = document.querySelector("iframe").id
-            socket.emit('getEndGameState', id, (endGameState) => {
-                document.getElementById("new game!!").addEventListener("click", () => {
+            // while (document.getElementsByClassName('socketID') == {})
+            //    ;
+            // let id = document.getElementsByClassName('socketID')
+            // console.log("Id " + JSON.stringify(id));
+            //console.log(document.querySelector("iframe"))
+
+            let id = window.parent.document.getElementsByClassName('socketID')[0].id
+            document.getElementById("new game!!").addEventListener("click", () => {
+                socket.emit('getEndGameState', id, (endGameState) => {
                     if (confirm("Are u sure u want to start a new game???"))
                         window.location.reload(false);
-                });
-                document.getElementById("offer draw").addEventListener("click", () => {
+                })
+            });
+            document.getElementById("offer draw").addEventListener("click", () => {
+                socket.emit('getEndGameState', id, (endGameState) => {
                     if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
                         endGameState.draw = true;
                         handleEndGame(endGameState);
                     }
-                });
-                document.getElementById("resign game").addEventListener("click", () => {
+                })
+            });
+            document.getElementById("resign game").addEventListener("click", () => {
+                socket.emit('getEndGameState', id, (endGameState) => {
                     if (confirm("Are u sure u want to loose the game?????")) {
                         endGameState.win = true;
                         endGameState.isBlack = !this.checkersLogic.isBlackTurn;
                         handleEndGame(endGameState);
                     }
-                });
-            })
+                })
+
+            });
         }
 
         let addEventMouseUpImg = (img) => {
