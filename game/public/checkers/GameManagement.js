@@ -4,8 +4,7 @@ const socket = io()
 class GameManagement {
     constructor() {
         this.boardManagement = new BoardManagement();
-        this.graphics = new Graphics();
-        //this.checkersLogic = new CheckersLogic(this.boardManagement.symbolicBoard, this.graphics);
+        this.graphics = new Graphics(this.boardManagement.symbolicBoard);
     }
 
     play() {
@@ -33,13 +32,6 @@ class GameManagement {
         }
 
         let addEventsToButtons = () => {
-            //let endGameState = this.checkersLogic.getEndGameState();
-            // while (document.getElementsByClassName('socketID') == {})
-            //    ;
-            // let id = document.getElementsByClassName('socketID')
-            // console.log("Id " + JSON.stringify(id));
-            //console.log(document.querySelector("iframe"))
-
             let id = window.parent.document.getElementsByClassName('socketID')[0].id
             document.getElementById("new game!!").addEventListener("click", () => {
                 socket.emit('getEndGameState', id, (endGameState) => {
@@ -71,6 +63,7 @@ class GameManagement {
             img.addEventListener("mouseup", (e) => {
                 e.preventDefault();
                 mouseDown = false;
+
                 let elements, from, to;
                 try {
                     elements = getAllElementsFromPoint(e.clientX, e.clientY);
@@ -83,34 +76,35 @@ class GameManagement {
                 currentImg.removeAttribute('style');
 
                 if (elements[1] != null) {
-                    socket.emit('makeMove', { from, to }, (error) => {
-                        if (error) {
-                            alert(error)
-                            location.href = '/'
-                        }
-                        let legalMoveState = this.checkersLogic.isMoveTotalLegal(from, to);
+                    socket.emit('isMoveTotalLegal', { from, to }, (legalMoveState) => {
                         if (legalMoveState.is) {
-                            /////////////////////////////////////////////
-
-
+                            //socket.emit('makeMove', { from, to }, (error) => {
                             this.boardManagement.makeMove(from, to, legalMoveState);
-                            this.checkersLogic.checkAndUpadateMiddleSequenceState(legalMoveState, to)
-                            if (!legalMoveState.inMiddleSequence.is) {
-                                this.checkersLogic.isBlackTurn = !this.checkersLogic.isBlackTurn;
+                            //socket.emit('checkAndUpadateMiddleSequenceState', { legalMoveState, to }, (error) => {
+                            // if (error) {
+                            //     alert(error)
+                            // }
+                            if (!legalMoveState.inMiddleSequence.is)
                                 this.boardManagement.updateKingsIfNecessary(to);
-                            }
+                            this.graphics.renderMessages(legalMoveState.message);
+                            this.graphics.renderPieces();
+                            addEventsToNewPics();
+                            socket.emit('getEndGameState', id, (endGameState) => {
+                                handleEndGame(endGameState);
+                            })
+                            //  })
+                            //})
                         }
+                        else
+                            this.graphics.renderMessages(legalMoveState.message);
 
-                        this.graphics.renderMessages(legalMoveState.message);
-                        this.graphics.renderPieces();
-                        addEventsToNewPics();
-                        handleEndGame(this.checkersLogic.getEndGameState());
                     })
-
-                }                
+                }
                 this.graphics.renderPieces();
                 addEventsToNewPics();
-                handleEndGame(this.checkersLogic.getEndGameState());
+                socket.emit('getEndGameState', id, (endGameState) => {
+                    handleEndGame(endGameState);
+                })
             });
         }
 
@@ -151,3 +145,7 @@ let handleEndGame = (endGameState) => {
         return;
     }
 }
+
+socket.on('error', (errorMsg) => {
+    location.href = '/transferPage.html?msg=' + errorMsg
+})

@@ -1,24 +1,15 @@
 "use strict";
 class Graphics {
     constructor(symbolicBoard) {
-        this.symbolicBoard = [
-            0, 1, 0, 1, 0, 1, 0, 1,
-            1, 0, 1, 0, 1, 0, 1, 0,
-            0, 1, 0, 1, 0, 1, 0, 1,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            2, 0, 2, 0, 2, 0, 2, 0,
-            0, 2, 0, 2, 0, 2, 0, 2,
-            2, 0, 2, 0, 2, 0, 2, 0
-        ];
+        this.symbolicBoard = symbolicBoard
         this.divsBoard = setBoardSize(this.symbolicBoard);
         this.messages = [];
     }
     renderPieces() {
-        console.log(".............................................................");
+        //console.log(".............................................................");
         
         let allImages = document.querySelectorAll("img");
-        console.log(21 + JSON.stringify(this.symbolicBoard));
+        //console.log(21 + JSON.stringify(this.symbolicBoard));
 
         for (var i = 0; i < allImages.length; i++)
             allImages[i].parentElement.removeChild(allImages[i]);
@@ -45,9 +36,9 @@ class Graphics {
         gameDiv.appendChild(gameBoardDiv);
         gameDiv.appendChild(panelDiv);
 
-        for (let k = 0; k < Math.sqrt(this.symbolicBoard.length); k++) {
+        for (let k = 0; k < this.symbolicBoard.length; k++) {
             gameBoardDiv.appendChild(document.createElement("br"));
-            for (let l = 0; l < Math.sqrt(this.symbolicBoard.length); l++) {
+            for (let l = 0; l < this.symbolicBoard.length; l++) {
                 this.divsBoard[k][l] = document.createElement("div");
                 isWhite = l != 0 ? !isWhite : isWhite;
                 this.divsBoard[k][l].classList = isWhite ? "white" : "black";

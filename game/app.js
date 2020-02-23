@@ -28,16 +28,18 @@ app.use(function (req, res, next) {
 
 const server = http.createServer(app)
 const io = socketio(server)
+io.eio.pingTimeout = 1200000; // 2 minutes
+io.eio.pingInterval = 50000;
 
 const bearerToken = require('express-bearer-token');
 
 const User = require('../database/models/user')
 
 const Checkers = require('./src/checkers/CheckersLogic.js')
-const BoardManagement = require('./public/checkers/BoardManagement')
+const BoardManagement = require('./src/checkers/BoardManagement.js')
 
 let checkersLogic = new Checkers()
-//let boardManagement = new BoardManagement()
+let boardManagement = new BoardManagement()
 //console.log(JSON.stringify(checkersLogic));
 
 
@@ -91,13 +93,13 @@ io.on('connection', async (socket) => {
     })
 
     socket.on('makeMove', ({ from, to }, callback) => {
-        console.log("From: " + JSON.stringify(from) + "           TO: " + JSON.stringify(to));
+        // console.log("From: " + JSON.stringify(from) + "           TO: " + JSON.stringify(to));
         callback()
     })
 
     socket.on('getEndGameState', (id, callback) => {
-        console.log("ID: " + id)//JSON.stringify(checkersLogic))
-        console.log("getEndGameState socket.rooms: " + JSON.stringify(socket.rooms) + "   socket.id" + socket.id)
+        //console.log("ID: " + id)//JSON.stringify(checkersLogic))
+        // console.log("getEndGameState socket.rooms: " + JSON.stringify(socket.rooms) + "   socket.id" + socket.id)
         if (id != socket.id && usersOnline.find(oneUser => oneUser.socketId == id)) {
             let currentUser = usersOnline.find(oneUser => oneUser.socketId == id)
             io.sockets.connected[id].leave(currentUser.room);
@@ -118,6 +120,33 @@ io.on('connection', async (socket) => {
             callback(endGameState)
         }
     })
+
+    socket.on('isMoveTotalLegal', ({ from, to }, callback) => {
+        console.log("123 app.js socket.rooms " + JSON.stringify(socket.rooms) + "socket rooms[0]: " + socket.rooms[0]);
+
+        const legalMoveState = checkersLogic.isMoveTotalLegal(from, to, socket.rooms[0])
+        if (legalMoveState.is) {
+
+            boardManagement.makeMove(from, to, legalMoveState, checkersLogic.getBoardByIndex(socket.rooms[0]));
+
+            checkersLogic.checkAndUpadateMiddleSequenceState(legalMoveState, to, socket.rooms[0])
+
+            if (!legalMoveState.inMiddleSequence.is)
+                boardManagement.updateKingsIfNecessary(to, checkersLogic.getBoardByIndex(socket.rooms[0]));
+        }
+        callback(legalMoveState)
+    })
+    // socket.on('checkAndUpadateMiddleSequenceState', ({ legalMoveState, to }, callback) => {
+    //     // callback(checkersLogic.isMoveTotalLegal(from, to, socket.rooms[0]))
+    //     try {
+    //         checkersLogic.checkAndUpadateMiddleSequenceState(legalMoveState, to, socket.rooms[0])
+    //     } catch (e) {
+    //         return callback(e)
+    //     }
+    //     callback()
+    // })
+
+
 
     socket.on('sendReqToStartGameWith', (userName) => {
         const from = usersOnline.find(oneUser => oneUser.socketId == socket.id)
