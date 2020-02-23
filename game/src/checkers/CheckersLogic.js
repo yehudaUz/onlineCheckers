@@ -38,7 +38,12 @@ class CheckersLogic {
             inMiddleSequence: this.gamesStatus[index].legalMoveState.inMiddleSequence,
             message: []
         }
-        if (to == null || to.x == null || to.y == null || this.gamesStatus[index].board[to.y][to.x] != null) {
+        if (from == null || from.x == null || from.y == null ||
+            to == null || to.x == null || to.y == null) {
+            this.gamesStatus[index].legalMoveState.message.push("Position illegal!");
+            return this.gamesStatus[index].legalMoveState;
+        }
+        else if (this.gamesStatus[index].board[to.y][to.x] != null) {
             this.gamesStatus[index].legalMoveState.message.push("Not Empty!");
             return this.gamesStatus[index].legalMoveState;
         } else if (this.gamesStatus[index].board[from.y][from.x].isBlack != this.gamesStatus[index].isBlackTurn) {
@@ -83,15 +88,15 @@ class CheckersLogic {
                 }
             }
         } else { //king
-            let direction = getMoveDirection(from, to);
+            let direction = this.getMoveDirection(from, to);
             if (direction.rightDown)
-                return this.gamesStatus[index].isKingLegalMove(1, 1, from, to, this.gamesStatus[index].legalMoveState);
+                return this.isKingLegalMove(1, 1, from, to, this.gamesStatus[index].legalMoveState, index);
             else if (direction.leftDown)
-                return this.gamesStatus[index].isKingLegalMove(-1, 1, from, to, this.gamesStatus[index].legalMoveState);
+                return this.isKingLegalMove(-1, 1, from, to, this.gamesStatus[index].legalMoveState, index);
             else if (direction.leftUp)
-                return this.gamesStatus[index].isKingLegalMove(-1, -1, from, to, this.gamesStatus[index].legalMoveState);
+                return this.isKingLegalMove(-1, -1, from, to, this.gamesStatus[index].legalMoveState, index);
             else if (direction.rightUp)
-                return this.gamesStatus[index].isKingLegalMove(1, -1, from, to, this.gamesStatus[index].legalMoveState);
+                return this.isKingLegalMove(1, -1, from, to, this.gamesStatus[index].legalMoveState, index);
         }
 
         this.gamesStatus[index].legalMoveState.legal = true;
@@ -130,7 +135,7 @@ class CheckersLogic {
     }
 
     isKingLegalMove(stepI, stepJ, from, to, legalMoveState, index) {
-        for (let i = parseInt(from.x) + stepI, j = parseInt(from.y) + stepJ; this.gamesStatus[index].condition(parseInt(i), parseInt(to.x), parseInt(stepI)) && this.gamesStatus[index].condition(j, to.y, stepJ); i += stepI, j += stepJ) {
+        for (let i = parseInt(from.x) + stepI, j = parseInt(from.y) + stepJ; this.condition(parseInt(i), parseInt(to.x), parseInt(stepI)) && this.condition(j, to.y, stepJ); i += stepI, j += stepJ) {
             if (this.gamesStatus[index].board[j][i] != null) {
                 if (this.gamesStatus[index].board[j][i].isBlack == this.gamesStatus[index].isBlackTurn || (this.gamesStatus[index].board[j][i].isBlack != this.gamesStatus[index].isBlackTurn &&
                     this.gamesStatus[index].board[j + stepJ][i + stepI] != null && this.gamesStatus[index].board[j + stepJ][i + stepI].isBlack != this.gamesStatus[index].isBlackTurn))
@@ -221,7 +226,7 @@ class CheckersLogic {
     }
 
     getMoveDirection(from, to) {
-        console.log(216 + " " + from + " " + to);
+        console.log(216 + " " + from + " " + to)
 
         let diagonalDirction = { rightUp: false, rightDown: false, leftDown: false, leftUp: false };
         if (to.y > from.y && to.x > from.x)

@@ -1,4 +1,5 @@
-//const CheckersPiece = require('./CheckersPiece')
+const CheckersPiece = require('./CheckersPiece')
+
 const initialBoard = [
     0, 1, 0, 1, 0, 1, 0, 1,
     1, 0, 1, 0, 1, 0, 1, 0,
