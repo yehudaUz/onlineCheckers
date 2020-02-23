@@ -107,8 +107,7 @@ class GameManagement {
                         handleEndGame(this.checkersLogic.getEndGameState());
                     })
 
-                }
-
+                }                
                 this.graphics.renderPieces();
                 addEventsToNewPics();
                 handleEndGame(this.checkersLogic.getEndGameState());
@@ -127,7 +126,9 @@ class GameManagement {
         let currentImg, cureentDiv, mouseDown = false;
         addEventsToNewPics();
         addEventsToButtons();
-        socket.emit('gameConfigured', this.boardManagement.getBoard(), (error) => {
+        let id = window.parent.document.getElementsByClassName('socketID')[0].id
+        let board = this.boardManagement.getBoard()
+        socket.emit('gameConfigured', { id, board }, (error) => {
             if (error) {
                 alert(error)
                 location.href = '/'

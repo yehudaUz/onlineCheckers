@@ -95,14 +95,28 @@ io.on('connection', async (socket) => {
         callback()
     })
 
-    socket.on('getEndGameState',(id, callback) => {
+    socket.on('getEndGameState', (id, callback) => {
         console.log("ID: " + id)//JSON.stringify(checkersLogic))
-        console.log("getEndGameState socket.rooms: " + JSON.stringify(socket.rooms) + "   socket.id" + socket.id); dasdasdasdasdasdasdasdasdasdadasd\\ */
+        console.log("getEndGameState socket.rooms: " + JSON.stringify(socket.rooms) + "   socket.id" + socket.id)
+        if (id != socket.id && usersOnline.find(oneUser => oneUser.socketId == id)) {
+            let currentUser = usersOnline.find(oneUser => oneUser.socketId == id)
+            io.sockets.connected[id].leave(currentUser.room);
+            currentUser.socketId = socket.id
+            socket.join(currentUser.room, () => {
+                socket.leave(socket.id, () => {
+                    console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
+                    console.log(socket.rooms[0]);
 
-        const endGameState = checkersLogic.getEndGameState(socket.rooms)
-
-        //socket.id)
-        callback(endGameState)
+                    const endGameState = checkersLogic.getEndGameState(socket.rooms[0])
+                    callback(endGameState)
+                    return
+                })
+            })
+        }
+        else {
+            const endGameState = checkersLogic.getEndGameState(socket.rooms[0])
+            callback(endGameState)
+        }
     })
 
     socket.on('sendReqToStartGameWith', (userName) => {
@@ -117,22 +131,46 @@ io.on('connection', async (socket) => {
         const to = usersOnline.find(oneUser => oneUser.socketId == socket.id)
 
         if (res) {
-            socket.join(roomNumber)
-            io.sockets.connected[from.socketId].join(roomNumber, () => {
-                io.to(from.socketId).emit('startGame', { color: "white", names: [from.username, to.username], id: from.socketId })
-                io.to(to.socketId).emit('startGame', { color: "black", names: [to.username, from.username], id: to.socketId })
-                console.log("Id1: " + socket.id + "Rooms: " + JSON.stringify(socket.rooms))
-                console.log("Id2: " + from.socketId + "Rooms: " + JSON.stringify(io.sockets.connected[from.socketId].rooms))
-                roomNumber++;
-            });
+            // socket.leave(socket.id);
+            // io.sockets.connected[from.socketId].leave(from.socketId)
+            socket.join(roomNumber, () => {
+                to.room = roomNumber
+                io.sockets.connected[from.socketId].join(roomNumber, () => {
+                    from.room = roomNumber
+                    io.to(from.socketId).emit('startGame', { color: "white", names: [from.username, to.username], id: from.socketId })
+                    io.to(to.socketId).emit('startGame', { color: "black", names: [to.username, from.username], id: to.socketId })
+                    console.log("Id1: " + socket.id + "Rooms: " + JSON.stringify(socket.rooms))
+                    console.log("Id2: " + from.socketId + "Rooms: " + JSON.stringify(io.sockets.connected[from.socketId].rooms))
+                    roomNumber++;
+                })
+            })
         }
         else {
             io.to(from.socketId).emit('reqCanceld', to.username)
         }
     })
 
-    socket.on('gameConfigured', (board) => {
-        checkersLogic.setNewRoom(roomNumber, board)
+    socket.on('gameConfigured', ({ id, board }) => {
+        console.log(JSON.stringify(socket.id));
+        console.log(JSON.stringify(usersOnline));
+        console.log("IIDDD: " + id);
+
+        if (id != socket.id) {
+            let currentUser = usersOnline.find(oneUser => oneUser.socketId == id)
+            io.sockets.connected[id].leave(currentUser.room);
+            currentUser.socketId = socket.id
+            socket.join(currentUser.room, () => {
+                socket.leave(socket.id, () => {
+                    console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
+                    console.log(socket.rooms[0]);
+
+                    checkersLogic.setNewRoom(currentUser.room, board)
+                    return
+                })
+            })
+        }
+        else
+            checkersLogic.setNewRoom(from.room, board)
     })
 
     socket.on('disconnect', (callback) => {

@@ -4,8 +4,10 @@ class CheckersLogic {
         this.gamesStatus = [];
     };
 
-    setNewRoom(roomNumber,board) {
-        this.gamesStatus[roomNumber] = ({
+    setNewRoom(roomNumber, board) {
+        console.log("room numer setneweoom " + roomNumber);
+        
+        this.gamesStatus[roomNumber] = {
             isBlackTurn: false,
             eaten: [],
             board,
@@ -17,10 +19,14 @@ class CheckersLogic {
                 inMiddleSequence: { is: false, from: { x: -1, y: -1 } },
                 message: []
             }
-        });
+        }
+        console.log(this.gamesStatus);
+        
     }
 
     isMoveLegal({ from, to }, index) {
+        console.log("III " + index);
+        
         this.gamesStatus[index].legalMoveState = {
             legal: false,
             arrOfPiecesToDelete: [],
@@ -48,7 +54,7 @@ class CheckersLogic {
             } else if (Math.abs(to.y - from.y) == 2 && Math.abs(to.x - from.x) == 2) { //check if eat
                 let x = 0,
                     y = 0;
-                let direction = getMoveDirection(from, to);
+                let direction = this.getMoveDirection(from, to);
                 if (direction.rightDown) {
                     x = parseInt(to.x) - 1;
                     y = parseInt(to.y) - 1;
@@ -133,6 +139,8 @@ class CheckersLogic {
     }
 
     getEndGameState(index) {/////////////////////////////////////////////////////////////////////
+        console.log("getEndGameState index:" + JSON.stringify(index));
+        
         if (this.isDraw(this.gamesStatus[index]))
             return this.gamesStatus[index].endGamestate;
         this.isWin(this.gamesStatus[index], index);
@@ -205,6 +213,8 @@ class CheckersLogic {
     }
 
     getMoveDirection(from, to) {
+        console.log(216 + " " + from + " " + to);
+        
         let diagonalDirction = { rightUp: false, rightDown: false, leftDown: false, leftUp: false };
         if (to.y > from.y && to.x > from.x)
             diagonalDirction.rightDown = true;
@@ -225,6 +235,8 @@ class CheckersLogic {
         // }
         // if (isOnlyFifteenKingsMoveWithoutEating(ths))
         //     return true;
+        console.log(ths);
+        
         return ths.fifteenKingsMoveCounter >= 15;
     }
 
@@ -239,6 +251,8 @@ class CheckersLogic {
     }
 
     playerPiecesAllBlocked(ths, index) {
+        console.log(252 + "  " + index);
+        
         for (let i = 0; i < ths.board.length; i++) {
             for (let j = 0; j < ths.board.length; j++) {
                 if (ths.board[i][j] != null && ths.board[i][j].isBlack == ths.isBlackTurn) {
@@ -246,7 +260,8 @@ class CheckersLogic {
                         for (let l = 0; l < ths.board.length; l++) {
                             let from = { x: j, y: i },
                                 to = { x: l, y: k };
-                            if (this.isMoveLegal({ from, to }).legal, index)
+                            //if (this.isMoveLegal({ from, to }).legal, index)
+                            if (this.isMoveLegal({ from, to },index).legal)
                                 return false;
                         }
                     }

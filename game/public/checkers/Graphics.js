@@ -15,7 +15,11 @@ class Graphics {
         this.messages = [];
     }
     renderPieces() {
+        console.log(".............................................................");
+        
         let allImages = document.querySelectorAll("img");
+        console.log(21 + JSON.stringify(this.symbolicBoard));
+
         for (var i = 0; i < allImages.length; i++)
             allImages[i].parentElement.removeChild(allImages[i]);
         for (let k = 0; k < this.symbolicBoard.length; k++) {
@@ -24,6 +28,7 @@ class Graphics {
                     this.divsBoard[k][l].appendChild(this.symbolicBoard[k][l].img);
             }
         }
+        
     }
     createAndRenderBoardAndPanel() {
         document.querySelector("body").style.visibility = "visible";
