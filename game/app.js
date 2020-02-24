@@ -59,42 +59,34 @@ const parseCookies = (str) => {
     return null;
 }
 
-
-io.use(async function (socket, next) {
-    const token = parseCookies(socket.handshake);
-    const user = await User.findOne({ 'tokens.token': token })
-
-    if (!user) {
-        console.log("error authonitcate")
-        socket.emit('error', 'Authontication failure!!')
-        io.sockets.disconnect();
-        io.sockets.close();
-    }
-
-    next();
-});
-
 io.on('connection', async (socket) => {
     console.log('New WebSocket connection')
+
+    socket.use(async function (packet, next) {
+        const token = parseCookies(socket.handshake);
+        const user = await User.findOne({ 'tokens.token': token })
+        if (!user) {
+            console.log("error authonitcate")
+            socket.emit('error', 'Authontication failure!!')
+            io.sockets.disconnect();
+            io.sockets.close();
+        }
+        if (!socket.onlineUser && usersOnline.find(oneUser => oneUser.socketId == socket.id))
+            socket.onlineUser = usersOnline.find(oneUser => oneUser.socketId == socket.id)
+        next()
+    })
 
     socket.on('login', async () => {
         const token = parseCookies(socket.handshake);
         const user = await User.findOne({ 'tokens.token': token })
 
         if (user) {
-            const userData = { username: user.name, rank: user.rating, socketId: socket.id }
+            const userData = { username: user.name, rank: user.rating, socketId: socket.id, games: [/*{room:,color:}*/] }
             if (!usersOnline.find(oneUser => oneUser.username == userData.username))
                 usersOnline.push(userData)
         }
 
-        // console.log("Us: " + JSON.stringify(usersOnline));
-
         io.emit('usersUpdate', usersOnline)
-    })
-
-    socket.on('makeMove', ({ from, to }, callback) => {
-        // console.log("From: " + JSON.stringify(from) + "           TO: " + JSON.stringify(to));
-        callback()
     })
 
     socket.on('getEndGameState', (id, callback) => {
@@ -123,8 +115,9 @@ io.on('connection', async (socket) => {
 
     socket.on('isMoveTotalLegal', ({ from, to }, callback) => {
         console.log("123 app.js socket.rooms " + JSON.stringify(socket.rooms) + "socket rooms[0]: " + socket.rooms[0]);
+        console.log("?USER : " + JSON.stringify(socket.user));
 
-        const legalMoveState = checkersLogic.isMoveTotalLegal(from, to, socket.rooms[0])
+        const legalMoveState = checkersLogic.isMoveTotalLegal(from, to, socket.rooms[0], socket.onlineUser)
         if (legalMoveState.is) {
 
             boardManagement.makeMove(from, to, legalMoveState, checkersLogic.getBoardByIndex(socket.rooms[0]));
@@ -133,6 +126,8 @@ io.on('connection', async (socket) => {
 
             if (!legalMoveState.inMiddleSequence.is)
                 boardManagement.updateKingsIfNecessary(to, checkersLogic.getBoardByIndex(socket.rooms[0]));
+
+            socket.broadcast.to(socket.rooms[0]).emit('opponentMove', { from, to, legalMoveState})
         }
         callback(legalMoveState)
     })
@@ -166,8 +161,10 @@ io.on('connection', async (socket) => {
                 to.room = roomNumber
                 io.sockets.connected[from.socketId].join(roomNumber, () => {
                     from.room = roomNumber
-                    io.to(from.socketId).emit('startGame', { color: "white", names: [from.username, to.username], id: from.socketId })
-                    io.to(to.socketId).emit('startGame', { color: "black", names: [to.username, from.username], id: to.socketId })
+                    io.to(from.socketId).emit('startGame', { isWhite: true, names: [from.username, to.username], id: from.socketId })
+                    from.isWhite = true
+                    io.to(to.socketId).emit('startGame', { isWhite: false, names: [to.username, from.username], id: to.socketId })
+                    to.isWhite = false
                     console.log("Id1: " + socket.id + "Rooms: " + JSON.stringify(socket.rooms))
                     console.log("Id2: " + from.socketId + "Rooms: " + JSON.stringify(io.sockets.connected[from.socketId].rooms))
                     roomNumber++;

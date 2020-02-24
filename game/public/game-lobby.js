@@ -70,7 +70,7 @@ socket.on('reqCanceld', (userName) => {
 // }
 
 let suka = 0
-socket.on('startGame', ({ color, names, id }) => {
+socket.on('startGame', ({ isWhite, names, id }) => {
     suka++
     if (suka > 1)
         return
@@ -111,7 +111,7 @@ socket.on('startGame', ({ color, names, id }) => {
         const panel = htmlDocument.getElementById("panel")
         const game = htmlDocument.getElementById("game")
 
-        if (color == "white") {
+        if (isWhite) {
             panel.after(nameTitle)
             game.prepend(nameTitle2)
         } else {

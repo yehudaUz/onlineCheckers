@@ -129,7 +129,21 @@ class GameManagement {
             }
         })
 
+
+        socket.on('opponentMove', ({ from, to, legalMoveState }) => {
+            this.boardManagement.makeMove(from, to, legalMoveState);
+            if (!legalMoveState.inMiddleSequence.is)
+                this.boardManagement.updateKingsIfNecessary(to);
+            this.graphics.renderMessages(legalMoveState.message);
+            this.graphics.renderPieces();
+            addEventsToNewPics();
+            socket.emit('getEndGameState', id, (endGameState) => {
+                handleEndGame(endGameState);
+            })
+        })
     }
+
+
 }
 
 
@@ -149,3 +163,4 @@ let handleEndGame = (endGameState) => {
 socket.on('error', (errorMsg) => {
     location.href = '/transferPage.html?msg=' + errorMsg
 })
+

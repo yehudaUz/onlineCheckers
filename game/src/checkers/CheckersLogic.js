@@ -28,8 +28,8 @@ class CheckersLogic {
 
     }
 
-    isMoveLegal({ from, to }, index) {
-        console.log("isMoveLegal INDEX" + index + "   { from, to }: " + JSON.stringify({ from, to }))//+ JSON.stringify(this.gamesStatus[index]));
+    isMoveLegal({ from, to }, index, user) {
+        //console.log("isMoveLegal INDEX" + index + "   { from, to }: " + JSON.stringify({ from, to }))//+ JSON.stringify(this.gamesStatus[index]));
         // console.log("isMoveLegal index " + index)
 
         this.gamesStatus[index].legalMoveState = {
@@ -44,13 +44,16 @@ class CheckersLogic {
             return this.gamesStatus[index].legalMoveState;
         }
         else if (this.gamesStatus[index].board[to.y][to.x] != null) {
-            this.gamesStatus[index].legalMoveState.message.push("Not Empty!");
+            this.gamesStatus[index].legalMoveState.message.push("Not Empty!")
             return this.gamesStatus[index].legalMoveState;
         } else if (this.gamesStatus[index].board[from.y][from.x].isBlack != this.gamesStatus[index].isBlackTurn) {
-            this.gamesStatus[index].legalMoveState.message.push("Not your turn");
+            this.gamesStatus[index].legalMoveState.message.push("Not your turn!")
+            return this.gamesStatus[index].legalMoveState;
+        } else if (user && this.gamesStatus[index].board[from.y][from.x].isBlack == user.isWhite) {
+            this.gamesStatus[index].legalMoveState.message.push("Not your pieces!");
             return this.gamesStatus[index].legalMoveState;
         } else if (Math.abs(to.y - from.y) != Math.abs(to.x - from.x)) { //not diagonal
-            this.gamesStatus[index].legalMoveState.message.push("Not diagonal")
+            this.gamesStatus[index].legalMoveState.message.push("Not diagonal!")
             return this.gamesStatus[index].legalMoveState;
         } else if (!this.gamesStatus[index].board[from.y][from.x].isKing) { //not king
             if ((Math.abs(to.y - from.y) != 1 && Math.abs(to.y - from.y) != 2) || //diff then 1 | 2 step, pawn
@@ -59,7 +62,7 @@ class CheckersLogic {
             else if (!(Math.abs(to.y - from.y) == 2 && Math.abs(to.x - from.x) == 2) &&
                 (this.gamesStatus[index].board[from.y][from.x].isBlack && to.y < from.y ||
                     !this.gamesStatus[index].board[from.y][from.x].isBlack && to.y > from.y)) { //move worng direction 
-                this.gamesStatus[index].legalMoveState.message.push("Wrong direction");
+                this.gamesStatus[index].legalMoveState.message.push("Wrong direction!");
                 return this.gamesStatus[index].legalMoveState;
             } else if (Math.abs(to.y - from.y) == 2 && Math.abs(to.x - from.x) == 2) { //check if eat
                 let x = 0,
@@ -103,8 +106,8 @@ class CheckersLogic {
         return this.gamesStatus[index].legalMoveState;
     }
 
-    isMoveTotalLegal(from, to, index) {
-        let legalMoveState = this.isMoveLegal({ from, to }, index);
+    isMoveTotalLegal(from, to, index, user) {
+        let legalMoveState = this.isMoveLegal({ from, to }, index, user);
         let mustEatState = this.getPlayerMustEatState(index);
         if (!mustEatState.is ||
             (mustEatState.is && (mustEatState.move).filter(pos => (pos.fromX == from.x &&
