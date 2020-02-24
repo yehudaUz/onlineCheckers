@@ -50,7 +50,6 @@ class BoardManagement {
     }
 
     updateKingsIfNecessary(to,board) {
-        console.log(JSON.stringify(board));
         if (to.y == board.length - 1 && board[to.y][to.x].isBlack && !board[to.y][to.x].isKing) {
             board[to.y][to.x] = new CheckersPiece(board[to.y][to.x].isBlack, true);
         } else if (to.y == 0 && !board[to.y][to.x].isBlack && !board[to.y][to.x].isKing) {

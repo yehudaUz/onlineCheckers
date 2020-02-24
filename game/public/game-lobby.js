@@ -1,19 +1,6 @@
 
-//<iframe style="width:200px;height:200px" src="you 2nd page url"></iframe>
-
-//const { username, password } = Qs.parse(location.search, { ignoreQueryPrefix: true })
-// const routers = require('../../database/routers')
-//console.log(username + " " + password + "\n" + routers)
-
-// const socket = io( {
-//   extraHeaders: {
-//     Authorization: "Bearer authorization_token_here"
-//   }
-// });
-
-
 const socket = io();
-// = {foo:"bar"}
+
 const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 
 socket.on("usersUpdate", (users, error) => {
@@ -25,10 +12,9 @@ socket.on("usersUpdate", (users, error) => {
     })
     document.querySelector('#sidebar').innerHTML = html
     let allUsers = document.querySelectorAll('li');
-    console.log(allUsers);
+
     for (let i = 0; i < allUsers.length; i++)
         allUsers[i].addEventListener("click", (info) => {
-            console.log(info.target.innerText.split(' ')[0]);
             const userName = info.target.innerText.split(' ')[0];
             socket.emit('sendReqToStartGameWith', userName, (error) => {
                 if (error)
@@ -42,7 +28,8 @@ socket.on('error', (errorMsg) => {
 })
 
 socket.on('ReqToStartGameWith', (fromUser) => {
-    console.log("Client side from: " + JSON.stringify(fromUser));
+    console.log("fromuser " + fromUser);
+    alert(fromUser)
     if (fromUser) {
         const res = confirm('Hi! ' + fromUser.username + " is inviting u to play! his rank is " + fromUser.rank + ".")
         socket.emit('resToGameInvite', { fromUser, res })
@@ -53,29 +40,14 @@ socket.on('reqCanceld', (userName) => {
     alert("Unfourtenly " + userName + " is decline your offer to play :(\nTry with another user :)")
 })
 
-// function load_home(callback) {
-//     return new Promise((resolve, reject) => {
-//         document.getElementById("gameDiv").innerHTML = '<object type="text/html" data="http://localhost:3000/checkers/index.html"  class="gameDiv"></object>';
-//         const tryAgain = () => {
-//             if (document.getElementById("gameBoard")) {
-//                 console.log("dd " + document.getElementById("gameBoard"));
-//                 return resolve()
-//             }
-//             else
-//                 tryAgain()
-//         }
-//         tryAgain()
-//     })
-//     //data="http://localhost:3000/checkers/index.html"
-// }
-
 let suka = 0
 socket.on('startGame', ({ isWhite, names, id }) => {
+    console.log("start game");
+
     suka++
     if (suka > 1)
         return
-    //console.log("client: " + JSON.stringify(from) + "   " + JSON.stringify(to) + "   " + JSON.stringify(roomNumber));
-    // document.getElementById("gameDiv").innerHTML = '<object id="embeddedPage" type="text/html" data="http://localhost:3000/checkers/index.html"  class="gameDiv"></object>';
+
     let iframe = document.createElement('iframe');
     iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
     document.getElementById("gameDiv").appendChild(iframe)
@@ -84,7 +56,7 @@ socket.on('startGame', ({ isWhite, names, id }) => {
     let socketID = document.createElement("div")
     socketID.id = id
     socketID.className = "socketID"
-   // document.body.appendChild(socketID)
+
     window.parent.document.getElementById('gameDiv').appendChild(socketID)
 
     iframe.onload = function () {  // before setting 'src'
@@ -95,7 +67,7 @@ socket.on('startGame', ({ isWhite, names, id }) => {
         // let socketID = htmlDocument.createElement("div")
         // socketID.id = id
         // socketID.className = "socketID"
-    
+
         //htmlDocument.body.appendChild(socketID);
         // perent.appendChild(socketID);
 
@@ -118,21 +90,7 @@ socket.on('startGame', ({ isWhite, names, id }) => {
             panel.after(nameTitle2)
             game.prepend(nameTitle)
         }
-        //console.log(parentDiv);
-      //  game.after(socketID)
-
-
-
-        //console.log("dd " + JSON.stringify(htmlDocument)); //document.getElementById("gameBoard"));
     }
-
-
-
-
-    // // Begin test case [ 1 ] : Existing childElement (all works correctly)
-    // let sp2 = document.getElementById("gameBoard")
-    //parentDiv.insertBefore(newNode, sp2)
-
 })
 
 socket.emit('login', (error) => {

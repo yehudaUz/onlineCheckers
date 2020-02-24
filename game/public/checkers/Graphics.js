@@ -5,11 +5,8 @@ class Graphics {
         this.divsBoard = setBoardSize(this.symbolicBoard);
         this.messages = [];
     }
-    renderPieces() {
-        //console.log(".............................................................");
-        
+    renderPieces() {        
         let allImages = document.querySelectorAll("img");
-        //console.log(21 + JSON.stringify(this.symbolicBoard));
 
         for (var i = 0; i < allImages.length; i++)
             allImages[i].parentElement.removeChild(allImages[i]);
@@ -52,21 +49,6 @@ class Graphics {
         messages.id = "messages";
         messages.textContent = "";
         gameBoardDiv.appendChild(messages);
-        // let changeGameBoardByScreenResolution = () => {
-        //     let Wsquares = document.getElementsByClassName('white');
-        //     let Bsquares = document.getElementsByClassName('black');
-
-        //     const height = screen.width / screen.height * 4.5;
-        //     console.log(height);
-
-        //     console.log("width: " + Wsquares[0].style.width + "      Height: " + height);
-
-        //     for (let i = 0; i < Wsquares.length; i++) {
-        //         Wsquares[i].style.height = 4.5+"vw"//height + "vh"//screen.width / screen.height * Wsquares[i].style.width;
-        //         Bsquares[i].style.height = 4.5+"vw"//height + "vh"//screen.width / screen.height * Wsquares[i].style.width;
-        //     }
-        // }
-        // changeGameBoardByScreenResolution()
         this.renderMessages(["Welocme!!!"]);
     }
     renderMovingMouseDown(currentImg, mouseMoveEvent) {

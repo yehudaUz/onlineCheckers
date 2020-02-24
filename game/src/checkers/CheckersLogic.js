@@ -8,9 +8,7 @@ class CheckersLogic {
         return this.gamesStatus[index].board
     }
 
-    setNewRoom(roomNumber, board) {
-        console.log("room numer setneweoom " + roomNumber);
-
+    setNewRoom(roomNumber, board, isSameUser) {
         this.gamesStatus[roomNumber] = {
             isBlackTurn: false,
             eaten: [],
@@ -24,14 +22,11 @@ class CheckersLogic {
                 message: []
             }
         }
-        console.log(this.gamesStatus);
-
+        if (isSameUser)
+            this.gamesStatus[roomNumber].isSameUser = true
     }
 
     isMoveLegal({ from, to }, index, user) {
-        //console.log("isMoveLegal INDEX" + index + "   { from, to }: " + JSON.stringify({ from, to }))//+ JSON.stringify(this.gamesStatus[index]));
-        // console.log("isMoveLegal index " + index)
-
         this.gamesStatus[index].legalMoveState = {
             legal: false,
             arrOfPiecesToDelete: [],
@@ -49,7 +44,8 @@ class CheckersLogic {
         } else if (this.gamesStatus[index].board[from.y][from.x].isBlack != this.gamesStatus[index].isBlackTurn) {
             this.gamesStatus[index].legalMoveState.message.push("Not your turn!")
             return this.gamesStatus[index].legalMoveState;
-        } else if (user && this.gamesStatus[index].board[from.y][from.x].isBlack == user.isWhite) {
+        } else if (user && !this.gamesStatus[index].isSameUser &&
+            this.gamesStatus[index].board[from.y][from.x].isBlack == user.isWhite) {
             this.gamesStatus[index].legalMoveState.message.push("Not your pieces!");
             return this.gamesStatus[index].legalMoveState;
         } else if (Math.abs(to.y - from.y) != Math.abs(to.x - from.x)) { //not diagonal
@@ -109,9 +105,11 @@ class CheckersLogic {
     isMoveTotalLegal(from, to, index, user) {
         let legalMoveState = this.isMoveLegal({ from, to }, index, user);
         let mustEatState = this.getPlayerMustEatState(index);
+        console.log("mustEatState.move: " + JSON.stringify(mustEatState.move));
+
         if (!mustEatState.is ||
-            (mustEatState.is && (mustEatState.move).filter(pos => (pos.fromX == from.x &&
-                pos.fromY == from.y && pos.toX == to.x && pos.toY == to.y)).length > 0))
+            (mustEatState.is && ((mustEatState.move).filter(pos => (pos.fromX == from.x &&
+                pos.fromY == from.y && pos.toX == to.x && pos.toY == to.y))).length > 0))
             if (legalMoveState.legal && (!legalMoveState.inMiddleSequence.is ||
                 (legalMoveState.inMiddleSequence.is && from.x == legalMoveState.inMiddleSequence.from.x &&
                     from.y == legalMoveState.inMiddleSequence.from.y))) {
@@ -151,9 +149,7 @@ class CheckersLogic {
         return legalMoveState;
     }
 
-    getEndGameState(index) {/////////////////////////////////////////////////////////////////////
-        console.log("getEndGameState index:" + JSON.stringify(index));
-
+    getEndGameState(index) {
         if (this.isDraw(this.gamesStatus[index]))
             return this.gamesStatus[index].endGamestate;
         this.isWin(this.gamesStatus[index], index);
@@ -180,15 +176,6 @@ class CheckersLogic {
 
     getPlayerMustEatState(index) {
         let eatFromArr = [];
-        if (this.gamesStatus[index].legalMoveState.inMiddleSequence.is) {
-            eatFromArr.push({
-                fromX: this.gamesStatus[index].legalMoveState.inMiddleSequence.from.x,
-                fromY: this.gamesStatus[index].legalMoveState.inMiddleSequence.from.y,
-                toX: -1,
-                toY: -1
-            });
-            return { is: false, move: eatFromArr };
-        }
         for (let i = 0; i < this.gamesStatus[index].board.length; i++) {
             for (let j = 0; j < this.gamesStatus[index].board.length; j++) {
                 if (this.gamesStatus[index].board[i][j] != null && this.gamesStatus[index].board[i][j].isBlack == this.gamesStatus[index].isBlackTurn) {
@@ -197,8 +184,17 @@ class CheckersLogic {
                             let from = { x: j, y: i },
                                 to = { x: l, y: k };
                             let moveState = this.isMoveLegal({ from, to }, index)
-                            if (moveState.legal && moveState.arrOfPiecesToDelete.length > 0)
+                            if (moveState.legal && moveState.arrOfPiecesToDelete.length > 0 &&
+                                !this.gamesStatus[index].legalMoveState.inMiddleSequence.is)
                                 eatFromArr.push({ fromX: from.x, fromY: from.y, toX: to.x, toY: to.y });
+                            else if (this.gamesStatus[index].legalMoveState.inMiddleSequence.is &&
+                                moveState.legal && moveState.arrOfPiecesToDelete.length > 0) {
+                                if (from.x == this.gamesStatus[index].legalMoveState.inMiddleSequence.from.x &&
+                                    from.y == this.gamesStatus[index].legalMoveState.inMiddleSequence.from.y) {
+                                    eatFromArr.push({ fromX: from.x, fromY: from.y, toX: to.x, toY: to.y });
+                                    //return { is: false, move: eatFromArr };
+                                }
+                            }
                         }
                     }
                 }
@@ -229,8 +225,6 @@ class CheckersLogic {
     }
 
     getMoveDirection(from, to) {
-        console.log(216 + " " + from + " " + to)
-
         let diagonalDirction = { rightUp: false, rightDown: false, leftDown: false, leftUp: false };
         if (to.y > from.y && to.x > from.x)
             diagonalDirction.rightDown = true;
@@ -244,15 +238,6 @@ class CheckersLogic {
     }
 
     isDraw(ths) {
-        // let isOnlyFifteenKingsMoveWithoutEating = (ths) => {
-        //     if (ths.fifteenKingsMoveCounter >= 15)
-        //         return true;
-        //     return false;
-        // }
-        // if (isOnlyFifteenKingsMoveWithoutEating(ths))
-        //     return true;
-        console.log(ths);
-
         return ths.fifteenKingsMoveCounter >= 15;
     }
 
@@ -267,8 +252,6 @@ class CheckersLogic {
     }
 
     playerPiecesAllBlocked(ths, index) {
-        console.log(252 + "  " + index);
-
         for (let i = 0; i < ths.board.length; i++) {
             for (let j = 0; j < ths.board.length; j++) {
                 if (ths.board[i][j] != null && ths.board[i][j].isBlack == ths.isBlackTurn) {
@@ -276,7 +259,6 @@ class CheckersLogic {
                         for (let l = 0; l < ths.board.length; l++) {
                             let from = { x: j, y: i },
                                 to = { x: l, y: k };
-                            //if (this.isMoveLegal({ from, to }).legal, index)
                             if (this.isMoveLegal({ from, to }, index).legal)
                                 return false;
                         }

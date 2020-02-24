@@ -15,11 +15,9 @@ app.use(bodyParser.urlencoded({
 const port = process.env.PORT || 3000
 const routers = require('./src/routers')
 app.use(routers)
-app.use(function (req, res, next) {
-    //console.log(req.path);
-    if ((req.path.indexOf('html') >= 0)) {
-        // console.log("ffffffffffffffffffffffffff");
 
+app.use(function (req, res, next) {
+    if ((req.path.indexOf('html') >= 0)) {
         return res.redirect('/');
     }
     next()
@@ -40,8 +38,6 @@ const BoardManagement = require('./src/checkers/BoardManagement.js')
 
 let checkersLogic = new Checkers()
 let boardManagement = new BoardManagement()
-//console.log(JSON.stringify(checkersLogic));
-
 
 let usersOnline = []
 let roomNumber = 0;
@@ -59,6 +55,19 @@ const parseCookies = (str) => {
     return null;
 }
 
+let keys = function (object) {
+    if (!(object && typeof object === 'object')) {
+        return null;
+    }
+    var result = [];
+    for (var key in object) {
+        if (object.hasOwnProperty(key)) {
+            result.push(key)
+        }
+    }
+    return result;
+}
+
 io.on('connection', async (socket) => {
     console.log('New WebSocket connection')
 
@@ -71,8 +80,21 @@ io.on('connection', async (socket) => {
             io.sockets.disconnect();
             io.sockets.close();
         }
-        if (!socket.onlineUser && usersOnline.find(oneUser => oneUser.socketId == socket.id))
-            socket.onlineUser = usersOnline.find(oneUser => oneUser.socketId == socket.id)
+        if (!socket.onlineUser && usersOnline.find(oneUser => oneUser.token == token)) {
+            socket.onlineUser = usersOnline.find(oneUser => oneUser.token == token)
+            if (keys(socket.rooms)[0] != socket.id)
+                socket.roomKeys = keys(socket.rooms)
+            else
+                socket.leave(socket.id, () => { })
+        } else if (socket.onlineUser && socket.onlineUser.socketId != socket.id) {
+            io.sockets.connected[socket.onlineUser.socketId].leave(socket.onlineUser.room);//remove old scoket from room
+            socket.onlineUser.socketId = socket.id  //update user id in onlineUsers
+            socket.join(socket.onlineUser.room, () => { //join updated socket id to game
+                socket.leave(socket.id, () => { //leave default room (del self id from socket rooms)
+                    console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
+                })
+            })
+        }
         next()
     })
 
@@ -81,7 +103,7 @@ io.on('connection', async (socket) => {
         const user = await User.findOne({ 'tokens.token': token })
 
         if (user) {
-            const userData = { username: user.name, rank: user.rating, socketId: socket.id, games: [/*{room:,color:}*/] }
+            const userData = { username: user.name, rank: user.rating, socketId: socket.id, games: [/*{room:,color:}*/], token }
             if (!usersOnline.find(oneUser => oneUser.username == userData.username))
                 usersOnline.push(userData)
         }
@@ -90,44 +112,38 @@ io.on('connection', async (socket) => {
     })
 
     socket.on('getEndGameState', (id, callback) => {
-        //console.log("ID: " + id)//JSON.stringify(checkersLogic))
-        // console.log("getEndGameState socket.rooms: " + JSON.stringify(socket.rooms) + "   socket.id" + socket.id)
-        if (id != socket.id && usersOnline.find(oneUser => oneUser.socketId == id)) {
-            let currentUser = usersOnline.find(oneUser => oneUser.socketId == id)
-            io.sockets.connected[id].leave(currentUser.room);
-            currentUser.socketId = socket.id
-            socket.join(currentUser.room, () => {
-                socket.leave(socket.id, () => {
-                    console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
-                    console.log(socket.rooms[0]);
+        // if (id != socket.id && usersOnline.find(oneUser => oneUser.socketId == id)) {
+        //     let currentUser = usersOnline.find(oneUser => oneUser.socketId == id)
+        //     io.sockets.connected[id].leave(currentUser.room);
+        //     currentUser.socketId = socket.id
+        //     socket.join(currentUser.room, () => {
+        //         socket.leave(socket.id, () => {
+        //             console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
 
-                    const endGameState = checkersLogic.getEndGameState(socket.rooms[0])
-                    callback(endGameState)
-                    return
-                })
-            })
-        }
-        else {
-            const endGameState = checkersLogic.getEndGameState(socket.rooms[0])
-            callback(endGameState)
-        }
+        //             const endGameState = checkersLogic.getEndGameState(socket.roomKeys[0])
+        //             callback(endGameState)
+        //             return
+        //         })
+        //     })
+        // }
+        // else {
+        const endGameState = checkersLogic.getEndGameState(socket.roomKeys[0])
+        callback(endGameState)
+        // }
     })
 
     socket.on('isMoveTotalLegal', ({ from, to }, callback) => {
-        console.log("123 app.js socket.rooms " + JSON.stringify(socket.rooms) + "socket rooms[0]: " + socket.rooms[0]);
-        console.log("?USER : " + JSON.stringify(socket.user));
-
-        const legalMoveState = checkersLogic.isMoveTotalLegal(from, to, socket.rooms[0], socket.onlineUser)
+        const legalMoveState = checkersLogic.isMoveTotalLegal(from, to, socket.roomKeys[0], socket.onlineUser)
         if (legalMoveState.is) {
 
-            boardManagement.makeMove(from, to, legalMoveState, checkersLogic.getBoardByIndex(socket.rooms[0]));
+            boardManagement.makeMove(from, to, legalMoveState, checkersLogic.getBoardByIndex(socket.roomKeys[0]));
 
-            checkersLogic.checkAndUpadateMiddleSequenceState(legalMoveState, to, socket.rooms[0])
+            checkersLogic.checkAndUpadateMiddleSequenceState(legalMoveState, to, socket.roomKeys[0])
 
             if (!legalMoveState.inMiddleSequence.is)
-                boardManagement.updateKingsIfNecessary(to, checkersLogic.getBoardByIndex(socket.rooms[0]));
+                boardManagement.updateKingsIfNecessary(to, checkersLogic.getBoardByIndex(socket.roomKeys[0]));
 
-            socket.broadcast.to(socket.rooms[0]).emit('opponentMove', { from, to, legalMoveState})
+            socket.broadcast.to(socket.roomKeys[0]).emit('opponentMove', { from, to, legalMoveState })
         }
         callback(legalMoveState)
     })
@@ -177,26 +193,34 @@ io.on('connection', async (socket) => {
     })
 
     socket.on('gameConfigured', ({ id, board }) => {
-        console.log(JSON.stringify(socket.id));
-        console.log(JSON.stringify(usersOnline));
-        console.log("IIDDD: " + id);
+        // if (id != socket.id) {
+        //     let currentUser = usersOnline.find(oneUser => oneUser.socketId == id)
+        //     io.sockets.connected[id].leave(currentUser.room);
+        //     currentUser.socketId = socket.id
+        //     socket.join(currentUser.room, () => {
+        //         socket.leave(socket.id, () => {
+        //             console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
 
-        if (id != socket.id) {
-            let currentUser = usersOnline.find(oneUser => oneUser.socketId == id)
-            io.sockets.connected[id].leave(currentUser.room);
-            currentUser.socketId = socket.id
-            socket.join(currentUser.room, () => {
-                socket.leave(socket.id, () => {
-                    console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
-                    console.log(socket.rooms[0]);
+        //             io.of('/').in(currentUser.room).clients((err, res) => {
+        //                 if (res.length == 2)
+        //                     checkersLogic.setNewRoom(currentUser.room, board)
+        //                 else
+        //                     checkersLogic.setNewRoom(currentUser.room, board, true)
+        //             })
 
-                    checkersLogic.setNewRoom(currentUser.room, board)
-                    return
-                })
-            })
-        }
-        else
-            checkersLogic.setNewRoom(from.room, board)
+        //             return
+        //         })
+        //     })
+        // }
+        // else {
+        checkersLogic.setNewRoom(from.room, board)
+        io.of('/').in(from.room).clients((err, res) => {
+            if (res.length == 2)
+                checkersLogic.setNewRoom(currentUser.room, board)
+            else
+                checkersLogic.setNewRoom(currentUser.room, board, true)
+        })
+        // }
     })
 
     socket.on('disconnect', (callback) => {

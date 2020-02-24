@@ -7,23 +7,11 @@ const auth = require('../../database/auth')
 const { sendWelcomeEmail, sendCancelationEmail } = require('../../emails/account')
 const router = new express.Router()
 require('../../database/mongoose')
-// const { username, password } = Qs.parse(location.search, { ignoreQueryPrefix: true })
-// const routers = require('../../database/routers')
-// console.log(username + " " + password +"\n" + routers)
-
-// app.use(function (req, res) {
-//     if ((req.path.indexOf('html') >= 0)) {
-//         res.redirect('/login');
-//     } 
-// });
-
 
 router.post('/signup', async (req, res) => {
     const user = new User(req.body)
     try {
         const found = await User.findOne({ $or: [{ name: req.body.name }, { email: req.body.email }] })
-        // console.log(JSON.stringify(req.body) + "    " + JSON.stringify(found));
-
         if (found)
             return res.redirect('./transferPage.html?msg=Same user-name or email already exist!')
 
@@ -52,12 +40,6 @@ router.post('/login', async (req, res) => {
         res.status(400).redirect('./transferPage.html?msg=User name or password invalid!')
     }
 })
-
-// router.get('/game-lobby', async (req, res) => {
-//     console.log(11111111111);
-
-//   res.redirect('/login');
-// })
 
 router.post('/users/logout', auth, async (req, res) => {
     try {
@@ -158,14 +140,10 @@ router.get('/users/:id/avatar', async (req, res) => {
 })
 
 router.get('*', async (req, res) => {
-    // console.log(1111111111111111111111);
-
     return res.redirect('/')
 })
 
 router.get(/html$/, async (req, res) => {
-    // console.log("Adasfasgfasgfewsg");
-
     res.redirect('/')
 })
 
