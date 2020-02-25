@@ -4,6 +4,8 @@ const socket = io();
 const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 
 socket.on("usersUpdate", (users, error) => {
+    console.log(socket.id);
+
     if (error)
         return console.log("Error: " + error);
 
@@ -24,12 +26,13 @@ socket.on("usersUpdate", (users, error) => {
 })
 
 socket.on('error', (errorMsg) => {
+    console.log(socket.id);
+
     location.href = '/transferPage.html?msg=' + errorMsg
 })
 
 socket.on('ReqToStartGameWith', (fromUser) => {
-    console.log("fromuser " + fromUser);
-    alert(fromUser)
+    console.log("ReqToStartGameWith: " + JSON.stringify(fromUser));
     if (fromUser) {
         const res = confirm('Hi! ' + fromUser.username + " is inviting u to play! his rank is " + fromUser.rank + ".")
         socket.emit('resToGameInvite', { fromUser, res })
@@ -37,12 +40,15 @@ socket.on('ReqToStartGameWith', (fromUser) => {
 })
 
 socket.on('reqCanceld', (userName) => {
+    console.log(socket.id);
+
     alert("Unfourtenly " + userName + " is decline your offer to play :(\nTry with another user :)")
 })
 
 let suka = 0
 socket.on('startGame', ({ isWhite, names, id }) => {
     console.log("start game");
+    console.log(socket.id);
 
     suka++
     if (suka > 1)
@@ -94,6 +100,8 @@ socket.on('startGame', ({ isWhite, names, id }) => {
 })
 
 socket.emit('login', (error) => {
+    console.log(socket.id);
+
     if (error) {
         alert(error)
         location.href = '/'

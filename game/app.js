@@ -79,23 +79,33 @@ io.on('connection', async (socket) => {
             socket.emit('error', 'Authontication failure!!')
             io.sockets.disconnect();
             io.sockets.close();
+            next()
         }
         if (!socket.onlineUser && usersOnline.find(oneUser => oneUser.token == token)) {
             socket.onlineUser = usersOnline.find(oneUser => oneUser.token == token)
-            if (keys(socket.rooms)[0] != socket.id)
+            if (keys(socket.rooms)[0] != socket.id) {
                 socket.roomKeys = keys(socket.rooms)
+                next()
+            }
             else
-                socket.leave(socket.id, () => { })
+                // socket.leave(socket.id, () => {
+                next()
+            // })
         } else if (socket.onlineUser && socket.onlineUser.socketId != socket.id) {
-            io.sockets.connected[socket.onlineUser.socketId].leave(socket.onlineUser.room);//remove old scoket from room
-            socket.onlineUser.socketId = socket.id  //update user id in onlineUsers
-            socket.join(socket.onlineUser.room, () => { //join updated socket id to game
-                socket.leave(socket.id, () => { //leave default room (del self id from socket rooms)
-                    console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
+            io.sockets.connected[socket.onlineUser.socketId].leave(socket.onlineUser.room, () => {//remove old socet id from room
+                socket.onlineUser.socketId = socket.id  //update user id in onlineUsers
+                socket.join(socket.onlineUser.room, () => { //join updated socket id to game
+                    if (keys(socket.rooms)[0] != socket.id) {
+                        socket.roomKeys = keys(socket.rooms)
+                        next()
+                    }
+                    else
+                        next()
                 })
-            })
+            });
         }
-        next()
+        else
+            next()
     })
 
     socket.on('login', async () => {
@@ -109,6 +119,7 @@ io.on('connection', async (socket) => {
         }
 
         io.emit('usersUpdate', usersOnline)
+        //io.to(socket.id).emit('ReqToStartGameWith',"yjyujyuj")
     })
 
     socket.on('getEndGameState', (id, callback) => {
@@ -147,23 +158,14 @@ io.on('connection', async (socket) => {
         }
         callback(legalMoveState)
     })
-    // socket.on('checkAndUpadateMiddleSequenceState', ({ legalMoveState, to }, callback) => {
-    //     // callback(checkersLogic.isMoveTotalLegal(from, to, socket.rooms[0]))
-    //     try {
-    //         checkersLogic.checkAndUpadateMiddleSequenceState(legalMoveState, to, socket.rooms[0])
-    //     } catch (e) {
-    //         return callback(e)
-    //     }
-    //     callback()
-    // })
-
-
 
     socket.on('sendReqToStartGameWith', (userName) => {
-        const from = usersOnline.find(oneUser => oneUser.socketId == socket.id)
+        console.log("username " + userName);
+
+        //const from = usersOnline.find(oneUser => oneUser.socketId == socket.id)
         const to = usersOnline.find(oneUser => oneUser.username == userName);
 
-        io.to(to.socketId).emit('ReqToStartGameWith', { username: from.username, rank: from.rank })
+        io.to(to.socketId).emit("ReqToStartGameWith", { username: socket.onlineUser.username, rank: socket.onlineUser.rank })
     })
 
     socket.on('resToGameInvite', ({ fromUser, res }) => {
@@ -193,34 +195,15 @@ io.on('connection', async (socket) => {
     })
 
     socket.on('gameConfigured', ({ id, board }) => {
-        // if (id != socket.id) {
-        //     let currentUser = usersOnline.find(oneUser => oneUser.socketId == id)
-        //     io.sockets.connected[id].leave(currentUser.room);
-        //     currentUser.socketId = socket.id
-        //     socket.join(currentUser.room, () => {
-        //         socket.leave(socket.id, () => {
-        //             console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
+        checkersLogic.setNewRoom(socket.onlineUser.room, board)
+        console.log(JSON.stringify(socket.onlineUser));
 
-        //             io.of('/').in(currentUser.room).clients((err, res) => {
-        //                 if (res.length == 2)
-        //                     checkersLogic.setNewRoom(currentUser.room, board)
-        //                 else
-        //                     checkersLogic.setNewRoom(currentUser.room, board, true)
-        //             })
-
-        //             return
-        //         })
-        //     })
-        // }
-        // else {
-        checkersLogic.setNewRoom(from.room, board)
-        io.of('/').in(from.room).clients((err, res) => {
+        io.of('/').in(socket.onlineUser.room).clients((err, res) => {
             if (res.length == 2)
-                checkersLogic.setNewRoom(currentUser.room, board)
+                checkersLogic.setNewRoom(socket.onlineUser.room, board)
             else
-                checkersLogic.setNewRoom(currentUser.room, board, true)
+                checkersLogic.setNewRoom(socket.onlineUser.room, board, true)
         })
-        // }
     })
 
     socket.on('disconnect', (callback) => {
@@ -230,9 +213,7 @@ io.on('connection', async (socket) => {
         if (userLeftIndex > -1) {
             usersOnline.splice(userLeftIndex, 1)
             io.emit('usersUpdate', usersOnline)
-
         }
-
     })
 })
 
