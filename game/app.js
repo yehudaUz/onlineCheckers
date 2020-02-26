@@ -92,7 +92,7 @@ io.on('connection', async (socket) => {
             // next()
             // })
         }
-        if (socket.onlineUser && socket.onlineUser.socketId != socket.id) { //remove else double req start game
+        if (socket.onlineUser && socket.onlineUser.socketId != socket.id && io.sockets.connected[socket.onlineUser.socketId]) { //remove else double req start game
             io.sockets.connected[socket.onlineUser.socketId].leave(socket.onlineUser.room, () => {//remove old socet id from room
                 socket.onlineUser.socketId = socket.id  //update user id in onlineUsers
                 socket.join(socket.onlineUser.room, () => { //join updated socket id to game
@@ -140,9 +140,29 @@ io.on('connection', async (socket) => {
         //     })
         // }
         // else {
-        const endGameState = checkersLogic.getEndGameState(socket.roomKeys[0])
-        callback(endGameState)
-        // }
+        // const endGameState = checkersLogic.getEndGameState(socket.roomKeys[0])
+        const endGameState = { win: true }
+        if (endGameState.win || endGameState.draw) {
+            io.of('/').in(socket.onlineUser.room).clients((err, res) => {
+                //io.sockets.clients(socket.room).forEach((player) => {
+                for (let i = 0; i < res.length; i++) {
+                    if (res[i] == socket.id)
+                        continue;
+                    const user = usersOnline.find(oneUser => oneUser.socketId == socket.id)
+                    socket.leave(socket.room)
+                    socket.onlineUser = null, socket.roomKeys = null
+                    User.updateRank(parseCookies(socket.handshake), parseCookies((io.sockets.connected[res[i]]).handshake),
+                        endGameState, user.isWhite)
+                    callback(endGameState)
+                }
+            });
+
+            //    })
+            // io.sockets.clients(socket.room).forEach((player) => {
+            //     player.leave(socket.room);
+            // });           
+        } else
+            callback(endGameState)
     })
 
     socket.on('isMoveTotalLegal', ({ from, to }, callback) => {
@@ -201,8 +221,10 @@ io.on('connection', async (socket) => {
                     from.room = roomNumber
                     io.to(from.socketId).emit('startGame', { isWhite: true, names: [from.username, to.username], id: from.socketId })
                     from.isWhite = true
-                    io.to(to.socketId).emit('startGame', { isWhite: false, names: [to.username, from.username], id: to.socketId })
-                    to.isWhite = false
+                    if (from.socketId != to.socketId) { //for 1 player against himself
+                        io.to(to.socketId).emit('startGame', { isWhite: false, names: [to.username, from.username], id: to.socketId })
+                        to.isWhite = false
+                    }
                     console.log("Id1: " + socket.id + "Rooms: " + JSON.stringify(socket.rooms))
                     console.log("Id2: " + from.socketId + "Rooms: " + JSON.stringify(io.sockets.connected[from.socketId].rooms))
                     roomNumber++;

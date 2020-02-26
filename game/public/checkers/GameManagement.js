@@ -153,11 +153,11 @@ class GameManagement {
 let handleEndGame = (endGameState) => {
     if (endGameState.win) {
         alert(endGameState.isBlack ? "Black WON!!" : "Red WON!!!");
-        window.location.reload(false);
+        parent.removeIframe()
         return;
     } else if (endGameState.draw) {
         alert("DRAW!!!");
-        window.location.reload(false);
+        parent.removeIframe()
         return;
     }
 }

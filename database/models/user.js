@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
     },
     rating: {
         type: Number,
-        default: 0,
+        default: 100,
         validate(value) {
             if (value < 0) {
                 throw new Error('Age must be a postive number')
@@ -60,6 +60,7 @@ const userSchema = new mongoose.Schema({
 //     foreignField: 'owner'
 // })
 
+
 userSchema.methods.toJSON = function () {
     const user = this
     const userObject = user.toObject()
@@ -82,6 +83,43 @@ userSchema.methods.generateAuthToken = async function () {
 
     return token
 }
+
+//win/loose is tenth of diff, draw is /25. min 1 point. max 25 points.
+let tempRanks = new Map()
+userSchema.method.updateRank = async (userToken, opponetToken, endGameState, isUserWhite) => {
+    const user = await User.findOne({ 'tokens.token': token })
+    const opponet = await User.findOne({ 'tokens.token': opponetToken })
+    if (!tempRanks.get(token))
+        tempRanks.set(token, new Date())
+    if (!tempRanks.get(opponetToken))
+        tempRanks.set(opponetToken, new Date())
+
+    let userRank = tempRanks.get(userToken) && (new Date() - tempRanks.get(userToken)) < 15000 ?
+        tempRanks.get(userToken) : user.rating
+    let opponetRank = tempRanks.get(opponetToken) && (new Date() - tempRanks.get(opponetToken)) < 15000 ?
+        tempRanks.get(opponetToken) : opponet.rating
+
+    if (endGameState.draw) {
+        user.rating = userRank + 3
+        //opponet.rawListeners = opponetRank + 3
+    }
+    else {
+        // let diff = userRank - opponetRank
+        // let points = 0
+        user.rating = user.rating + 10
+        // if ((userRank - opponetRank > 0 && endGameState.isWhite == isUserWhite) ||
+        //     () )
+        //     points = (diff / 10 / Math.sqrt(diff))
+        // else
+        //     points = diff / 10
+
+        // if (points > 25)
+        //     points = 25
+        // if (points < 1)
+        //     points = 1
+    }
+}
+
 
 userSchema.statics.findByCredentials = async (username, password) => {
     const user = await User.findOne({ name: username })

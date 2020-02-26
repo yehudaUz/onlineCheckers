@@ -45,14 +45,14 @@ socket.on('reqCanceld', (userName) => {
     alert("Unfourtenly " + userName + " is decline your offer to play :(\nTry with another user :)")
 })
 
-let suka = 0
+//let suka = 0
 socket.on('startGame', ({ isWhite, names, id }) => {
     console.log("start game");
     console.log(socket.id);
 
-    suka++
-    if (suka > 1)
-        return
+    // suka++
+    // if (suka > 1)
+    //     return
 
     let iframe = document.createElement('iframe');
     iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
@@ -99,16 +99,24 @@ socket.on('startGame', ({ isWhite, names, id }) => {
     }
 })
 
-socket.emit('login', (error) => {
-    console.log(socket.id);
+function removeIframe() {
+    document.querySelector('iframe').parentNode.removeChild(document.querySelector('iframe'));
+    //document.querySelector('iframe').parentElement.remove(document.querySelector('iframe'))
+    login()
+}
 
-    if (error) {
-        alert(error)
-        location.href = '/'
-    }
-})
+const login = () => {
+    socket.emit('login', (error) => {
+        console.log(socket.id);
+
+        if (error) {
+            alert(error)
+            location.href = '/'
+        }
+    })
+}
 
 
-
+login()
 
 
