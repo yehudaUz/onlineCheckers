@@ -85,22 +85,24 @@ io.on('connection', async (socket) => {
             socket.onlineUser = usersOnline.find(oneUser => oneUser.token == token)
             if (keys(socket.rooms)[0] != socket.id) {
                 socket.roomKeys = keys(socket.rooms)
-                next()
+                // next()
             }
-            else
-                // socket.leave(socket.id, () => {
-                next()
+            //else
+            // socket.leave(socket.id, () => {
+            // next()
             // })
-        } else if (socket.onlineUser && socket.onlineUser.socketId != socket.id) {
+        }
+        if (socket.onlineUser && socket.onlineUser.socketId != socket.id) { //remove else double req start game
             io.sockets.connected[socket.onlineUser.socketId].leave(socket.onlineUser.room, () => {//remove old socet id from room
                 socket.onlineUser.socketId = socket.id  //update user id in onlineUsers
                 socket.join(socket.onlineUser.room, () => { //join updated socket id to game
+                    console.log("UP Id: " + socket.id + "Rooms: " + JSON.stringify(socket.rooms))
                     if (keys(socket.rooms)[0] != socket.id) {
                         socket.roomKeys = keys(socket.rooms)
                         next()
                     }
-                    else
-                        next()
+                    // else
+                    //next()
                 })
             });
         }
@@ -155,16 +157,34 @@ io.on('connection', async (socket) => {
                 boardManagement.updateKingsIfNecessary(to, checkersLogic.getBoardByIndex(socket.roomKeys[0]));
 
             socket.broadcast.to(socket.roomKeys[0]).emit('opponentMove', { from, to, legalMoveState })
+            io.of('/').in(socket.roomKeys[0]).clients((err, res) => {
+
+                console.log(socket.id + " Send to other people in in room: " + socket.roomKeys[0] + "\n" +
+                    "Peolple in room: " + res);
+            })
+
         }
         callback(legalMoveState)
     })
 
+    let reqControl = new Map()
     socket.on('sendReqToStartGameWith', (userName) => {
-        console.log("username " + userName);
-
         //const from = usersOnline.find(oneUser => oneUser.socketId == socket.id)
         const to = usersOnline.find(oneUser => oneUser.username == userName);
+        // if (reqControl.get(to.socketId)) {
+        //     if ((reqControl.get(to.socketId) - new Date()) / 1000 > -15)
+        //         return
+        // }
+        // else
+        //     reqControl.set(to.socketId, new Date())
+        // if (!reqControl.get(to.socketId)) {
+        //     reqControl.set(to.socketId, new Date())
+        //     return
+        // }
 
+
+        console.log("sendReqToStartGameWith id:" + socket.id + " to: " + to.socketId + " userName: " + userName);
+        console.log("request controel: " + JSON.stringify(reqControl))
         io.to(to.socketId).emit("ReqToStartGameWith", { username: socket.onlineUser.username, rank: socket.onlineUser.rank })
     })
 
@@ -196,13 +216,20 @@ io.on('connection', async (socket) => {
 
     socket.on('gameConfigured', ({ id, board }) => {
         checkersLogic.setNewRoom(socket.onlineUser.room, board)
-        console.log(JSON.stringify(socket.onlineUser));
 
         io.of('/').in(socket.onlineUser.room).clients((err, res) => {
-            if (res.length == 2)
+            console.log("set new game, people in room: " + JSON.stringify(res));
+
+            if (res.length == 2) {
+                // io.to(socket.onlineUser.room).emit("pleaseCheckConnection")
                 checkersLogic.setNewRoom(socket.onlineUser.room, board)
-            else
+            }
+            else {
                 checkersLogic.setNewRoom(socket.onlineUser.room, board, true)
+                console.log("only 1 in room!!!!!!!");
+
+            }
+
         })
     })
 
@@ -215,7 +242,13 @@ io.on('connection', async (socket) => {
             io.emit('usersUpdate', usersOnline)
         }
     })
+
+    // socket.on('checkConnection', () => {
+    //     console.log(socket.id + "  checked connection.");
+    // })
 })
+
+
 
 server.listen(port, () => {
     console.log('server start listening on port 3000!');

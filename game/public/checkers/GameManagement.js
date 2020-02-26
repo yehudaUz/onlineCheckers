@@ -127,6 +127,8 @@ class GameManagement {
                 alert(error)
                 location.href = '/'
             }
+            // let f = { x: 0, y: 0 }, t = { x: 0, y: 0 }
+            // socket.emit('isMoveTotalLegal', { f, t })
         })
 
 
@@ -164,3 +166,8 @@ socket.on('error', (errorMsg) => {
     location.href = '/transferPage.html?msg=' + errorMsg
 })
 
+// socket.on('pleaseCheckConnection',()=> {
+//     console.log("pleaseCheckConnection");
+    
+//     socket.emit('checkConnection')
+// })
