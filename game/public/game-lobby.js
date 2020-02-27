@@ -7,7 +7,7 @@ socket.on("usersUpdate", (users, error) => {
     console.log(socket.id);
 
     if (error)
-        return console.log("Error: " + error);
+        return console.log("User update error: " + error);
 
     const html = Mustache.render(sidebarTemplate, {
         users
@@ -26,9 +26,11 @@ socket.on("usersUpdate", (users, error) => {
 })
 
 socket.on('error', (errorMsg) => {
-    console.log(socket.id);
-
     location.href = '/transferPage.html?msg=' + errorMsg
+})
+
+socket.on('msg', (msg) => {
+    alert(msg)
 })
 
 socket.on('ReqToStartGameWith', (fromUser) => {
@@ -101,18 +103,11 @@ socket.on('startGame', ({ isWhite, names, id }) => {
 
 function removeIframe() {
     document.querySelector('iframe').parentNode.removeChild(document.querySelector('iframe'));
-    //document.querySelector('iframe').parentElement.remove(document.querySelector('iframe'))
     login()
 }
 
 const login = () => {
-    socket.emit('login', (error) => {
-        console.log(socket.id);
-
-        if (error) {
-            alert(error)
-            location.href = '/'
-        }
+    socket.emit('login', () => {
     })
 }
 

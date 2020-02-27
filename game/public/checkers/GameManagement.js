@@ -32,7 +32,6 @@ class GameManagement {
         }
 
         let addEventsToButtons = () => {
-            let id = window.parent.document.getElementsByClassName('socketID')[0].id
             document.getElementById("new game!!").addEventListener("click", () => {
                 socket.emit('getEndGameState', false, (endGameState) => {
                     if (confirm("Are u sure u want to start a new game???"))
@@ -120,9 +119,8 @@ class GameManagement {
         let currentImg, cureentDiv, mouseDown = false;
         addEventsToNewPics();
         addEventsToButtons();
-        let id = window.parent.document.getElementsByClassName('socketID')[0].id
         let board = this.boardManagement.getBoard()
-        socket.emit('gameConfigured', { id, board }, (error) => {
+        socket.emit('gameConfigured', { board }, (error) => {
             if (error) {
                 alert(error)
                 location.href = '/'
@@ -151,7 +149,11 @@ class GameManagement {
 
 
 let handleEndGame = (endGameState) => {
-    if (endGameState.win) {
+    if (endGameState.opponentLeft) {
+        alert("Unfourtenlly your opponents left the room :(")
+        parent.removeIframe()
+        return;
+    } else if (endGameState.win) {
         alert(endGameState.isBlack ? "Black WON!!" : "Red WON!!!");
         parent.removeIframe()
         return;
@@ -162,12 +164,16 @@ let handleEndGame = (endGameState) => {
     }
 }
 
+socket.on('opponentLeft', () => {
+    handleEndGame({ win: false, isDraw: false, isWhite: false, opponentLeft: true })
+})
+
 socket.on('error', (errorMsg) => {
     location.href = '/transferPage.html?msg=' + errorMsg
 })
 
 // socket.on('pleaseCheckConnection',()=> {
 //     console.log("pleaseCheckConnection");
-    
+
 //     socket.emit('checkConnection')
 // })

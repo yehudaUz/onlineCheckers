@@ -173,20 +173,15 @@ io.on('connection', async (socket) => {
     socket.on('sendReqToStartGameWith', (userName) => {
         //const from = usersOnline.find(oneUser => oneUser.socketId == socket.id)
         const to = usersOnline.find(oneUser => oneUser.username == userName);
-        // if (reqControl.get(to.socketId)) {
-        //     if ((reqControl.get(to.socketId) - new Date()) / 1000 > -15)
-        //         return
-        // }
-        // else
-        //     reqControl.set(to.socketId, new Date())
-        // if (!reqControl.get(to.socketId)) {
-        //     reqControl.set(to.socketId, new Date())
-        //     return
-        // }
-
+        if (reqControl.get(socket.id)) {
+            if (reqControl.get(socket.id).to == to.socketId)
+                return socket.emit('msg', userName + " didn't respond (yet) to your offer..\nPlease wait patiencely or choose another player.");
+        }
+        else
+            reqControl.set(socket.id, { time: new Date(), to: to.socketId })
 
         console.log("sendReqToStartGameWith id:" + socket.id + " to: " + to.socketId + " userName: " + userName);
-        console.log("request controel: " + JSON.stringify(reqControl))
+        console.log("request control: " + reqControl)
         io.to(to.socketId).emit("ReqToStartGameWith", { username: socket.onlineUser.username, rank: socket.onlineUser.rank })
     })
 
@@ -218,7 +213,7 @@ io.on('connection', async (socket) => {
         }
     })
 
-    socket.on('gameConfigured', ({ id, board }) => {
+    socket.on('gameConfigured', ({ board }) => {
         checkersLogic.setNewRoom(socket.onlineUser.room, board)
 
         io.of('/').in(socket.onlineUser.room).clients((err, res) => {
@@ -237,7 +232,8 @@ io.on('connection', async (socket) => {
         })
     })
 
-    socket.on('disconnect', (callback) => {
+    socket.on('disconnect', () => {
+        console.log("socket " + socket.id + " disconnected.")
         const userLeftIndex = usersOnline.findIndex((oneUser) => {
             return oneUser.socketId == socket.id
         })
@@ -245,11 +241,15 @@ io.on('connection', async (socket) => {
             usersOnline.splice(userLeftIndex, 1)
             io.emit('usersUpdate', usersOnline)
         }
+        io.of('/').in(socket.onlineUser.room).clients((err, idsRes) => {
+            if (idsRes) {
+                const opponenetSocketId = idsRes[0]
+                io.to(opponenetSocketId).emit('opponentLeft')
+                //socket.leave(socket.room, () => { })
+                socket.onlineUser = null, socket.roomKeys = null
+            }
+        })
     })
-
-    // socket.on('checkConnection', () => {
-    //     console.log(socket.id + "  checked connection.");
-    // })
 })
 
 
