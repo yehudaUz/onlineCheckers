@@ -121,46 +121,28 @@ io.on('connection', async (socket) => {
         }
 
         io.emit('usersUpdate', usersOnline)
-        //io.to(socket.id).emit('ReqToStartGameWith',"yjyujyuj")
     })
 
-    socket.on('getEndGameState', (id, callback) => {
-        // if (id != socket.id && usersOnline.find(oneUser => oneUser.socketId == id)) {
-        //     let currentUser = usersOnline.find(oneUser => oneUser.socketId == id)
-        //     io.sockets.connected[id].leave(currentUser.room);
-        //     currentUser.socketId = socket.id
-        //     socket.join(currentUser.room, () => {
-        //         socket.leave(socket.id, () => {
-        //             console.log("Socket " + id + " switched to id " + socket.id + "  Current user: " + JSON.stringify(currentUser))
-
-        //             const endGameState = checkersLogic.getEndGameState(socket.roomKeys[0])
-        //             callback(endGameState)
-        //             return
-        //         })
-        //     })
-        // }
-        // else {
-        // const endGameState = checkersLogic.getEndGameState(socket.roomKeys[0])
-        const endGameState = { win: true, isWhite: true ,}
+    socket.on('getEndGameState', (isOpponentMove, callback) => {
+        const endGameState = { win: true, isWhite: true, isDraw: false }
         if (endGameState.win || endGameState.isDraw) {
-            io.of('/').in(socket.onlineUser.room).clients((err, res) => {
-                //io.sockets.clients(socket.room).forEach((player) => {
-                for (let i = 0; i < res.length; i++) {
-                    if (res[i] == socket.id) //player against homself not getting ranks
-                        continue;
-                    const user = usersOnline.find(oneUser => oneUser.socketId == socket.id)
-                    socket.leave(socket.room)
-                    socket.onlineUser = null, socket.roomKeys = null
-                    User.updateRank(parseCookies(socket.handshake), parseCookies((io.sockets.connected[res[i]]).handshake),
-                        endGameState, user.isWhite)
-                    callback(endGameState)
-                }
-            });
-
-            //    })
-            // io.sockets.clients(socket.room).forEach((player) => {
-            //     player.leave(socket.room);
-            // });           
+            if (!isOpponentMove) {
+                io.of('/').in(socket.onlineUser.room).clients((err, idsRes) => {
+                    if (idsRes.length > 1) {    //player against himself not getting ranks
+                        const user = usersOnline.find(oneUser => oneUser.socketId == socket.id)
+                        const opponenetSocketId = (socket.id != idsRes[0]) ? idsRes[0] : idsRes[1]
+                        User.updateRank(parseCookies(socket.handshake), parseCookies((io.sockets.connected[opponenetSocketId]).handshake),
+                            endGameState, user.isWhite).then((res, rej) => {
+                                usersOnline[usersOnline.findIndex(oneUser => oneUser.socketId == socket.id)].rank = res.userRating
+                                usersOnline[usersOnline.findIndex(oneUser => oneUser.socketId == opponenetSocketId)].rank = res.opponentRating
+                            })
+                    }
+                });
+            }
+            socket.leave(socket.room, () => { })
+            socket.onlineUser = null, socket.roomKeys = null
+            io.emit('usersUpdate', usersOnline)
+            callback(endGameState)
         } else
             callback(endGameState)
     })

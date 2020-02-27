@@ -34,13 +34,13 @@ class GameManagement {
         let addEventsToButtons = () => {
             let id = window.parent.document.getElementsByClassName('socketID')[0].id
             document.getElementById("new game!!").addEventListener("click", () => {
-                socket.emit('getEndGameState', id, (endGameState) => {
+                socket.emit('getEndGameState', false, (endGameState) => {
                     if (confirm("Are u sure u want to start a new game???"))
                         window.location.reload(false);
                 })
             });
             document.getElementById("offer draw").addEventListener("click", () => {
-                socket.emit('getEndGameState', id, (endGameState) => {
+                socket.emit('getEndGameState', false, (endGameState) => {
                     if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
                         endGameState.isDraw = true;
                         handleEndGame(endGameState);
@@ -48,7 +48,7 @@ class GameManagement {
                 })
             });
             document.getElementById("resign game").addEventListener("click", () => {
-                socket.emit('getEndGameState', id, (endGameState) => {
+                socket.emit('getEndGameState', false, (endGameState) => {
                     if (confirm("Are u sure u want to loose the game?????")) {
                         endGameState.win = true;
                         endGameState.isBlack = !this.checkersLogic.isBlackTurn;
@@ -89,7 +89,7 @@ class GameManagement {
                             this.graphics.renderMessages(legalMoveState.message);
                             this.graphics.renderPieces();
                             addEventsToNewPics();
-                            socket.emit('getEndGameState', id, (endGameState) => {
+                            socket.emit('getEndGameState', false, (endGameState) => {
                                 handleEndGame(endGameState);
                             })
                             //  })
@@ -102,9 +102,9 @@ class GameManagement {
                 }
                 this.graphics.renderPieces();
                 addEventsToNewPics();
-                socket.emit('getEndGameState', id, (endGameState) => {
-                    handleEndGame(endGameState);
-                })
+                // socket.emit('getEndGameState', id, (endGameState) => {
+                //     handleEndGame(endGameState);
+                // })
             });
         }
 
@@ -139,7 +139,7 @@ class GameManagement {
             this.graphics.renderMessages(legalMoveState.message);
             this.graphics.renderPieces();
             addEventsToNewPics();
-            socket.emit('getEndGameState', id, (endGameState) => {
+            socket.emit('getEndGameState', true, (endGameState) => {
                 handleEndGame(endGameState);
             })
         })

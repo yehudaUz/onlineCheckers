@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
     },
     rating: {
         type: Number,
-        default: 100,
+        default: 500,
         validate(value) {
             if (value < 0) {
                 throw new Error('Age must be a postive number')
@@ -85,39 +85,46 @@ userSchema.methods.generateAuthToken = async function () {
 }
 
 //win/loose is tenth of diff, draw is /25. min 1 point. max 25 points.
-let tempRanks = new Map()
-userSchema.method.updateRank = async (userToken, opponetToken, endGameState, isUserWhite) => {
-    const user = await User.findOne({ 'tokens.token': token })
-    const opponet = await User.findOne({ 'tokens.token': opponetToken })
-    if (!tempRanks.get(token))
-        tempRanks.set(token, new Date())
-    if (!tempRanks.get(opponetToken))
-        tempRanks.set(opponetToken, new Date())
+userSchema.statics.updateRank = function (userToken, opponentToken, endGameState, isUserWhite) {
+    return new Promise(async (resolve, reject) => {
+        const user = await User.findOne({ 'tokens.token': userToken })
+        const opponent = await User.findOne({ 'tokens.token': opponentToken })
 
-    let userRank = tempRanks.get(userToken) && (new Date() - tempRanks.get(userToken)) < 15000 ?
-        tempRanks.get(userToken) : user.rating
-    let opponetRank = tempRanks.get(opponetToken) && (new Date() - tempRanks.get(opponetToken)) < 15000 ?
-        tempRanks.get(opponetToken) : opponet.rating
+        if (endGameState.isDraw) {
+            let newUser = await User.findOneAndUpdate({ 'tokens.token': userToken }, { rating: user.rating + 3 }, { new: true })
+            let newOpponent = User.findOneAndUpdate({ 'tokens.token': opponentToken }, { rating: opponent.rating + 3 }, { new: true })
+            resolve({ userRating: newUser.rating, opponentRating: newOpponent.rating })
+        }
+        else {
+            if (endGameState.isWhite == isUserWhite) {
+                let newUser = await User.findOneAndUpdate({ 'tokens.token': userToken }, { rating: user.rating + 10 }, { new: true })
+                let newOpponent = await User.findOneAndUpdate({ 'tokens.token': opponentToken }, { rating: opponent.rating - 10 }, { new: true })
+                resolve({ userRating: newUser.rating, opponentRating: newOpponent.rating })
+            }
+            else {
+                let newUser;
+                if (user.rating >= 10)
+                    newUser = await User.findOneAndUpdate({ 'tokens.token': userToken }, { rating: user.rating - 10 }, { new: true })
+                else
+                    newUser = user
+                let newOpponent = await User.findOneAndUpdate({ 'tokens.token': opponentToken }, { rating: opponent.rating + 10 }, { new: true })
+                resolve({ userRating: newUser.rating, opponentRating: newOpponent.rating })
+            }
+            // let diff = userRank - opponentRank
+            // let points = 0
+            // user.rating = user.rating + 10
+            // if ((userRank -opponentRank > 0 && endGameState.isWhite == isUserWhite) ||
+            //     () )
+            //     points = (diff / 10 / Math.sqrt(diff))
+            // else
+            //     points = diff / 10
 
-    if (endGameState.draw) {
-        user.rating = userRank + 3
-        //opponet.rawListeners = opponetRank + 3
-    }
-    else {
-        // let diff = userRank - opponetRank
-        // let points = 0
-        user.rating = user.rating + 10
-        // if ((userRank - opponetRank > 0 && endGameState.isWhite == isUserWhite) ||
-        //     () )
-        //     points = (diff / 10 / Math.sqrt(diff))
-        // else
-        //     points = diff / 10
-
-        // if (points > 25)
-        //     points = 25
-        // if (points < 1)
-        //     points = 1
-    }
+            // if (points > 25)
+            //     points = 25
+            // if (points < 1)
+            //     points = 1
+        }
+    })
 }
 
 
