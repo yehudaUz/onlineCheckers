@@ -13,7 +13,7 @@ class CheckersLogic {
             isBlackTurn: false,
             eaten: [],
             board,
-            endGamestate: { draw: false, win: false, isBlack: false },
+            endGamestate: { isDraw: false, win: false, isBlack: false },
             fifteenKingsMoveCounter: 0,
             legalMoveState: {
                 legal: false,

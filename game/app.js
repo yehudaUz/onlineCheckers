@@ -141,12 +141,12 @@ io.on('connection', async (socket) => {
         // }
         // else {
         // const endGameState = checkersLogic.getEndGameState(socket.roomKeys[0])
-        const endGameState = { win: true }
-        if (endGameState.win || endGameState.draw) {
+        const endGameState = { win: true, isWhite: true ,}
+        if (endGameState.win || endGameState.isDraw) {
             io.of('/').in(socket.onlineUser.room).clients((err, res) => {
                 //io.sockets.clients(socket.room).forEach((player) => {
                 for (let i = 0; i < res.length; i++) {
-                    if (res[i] == socket.id)
+                    if (res[i] == socket.id) //player against homself not getting ranks
                         continue;
                     const user = usersOnline.find(oneUser => oneUser.socketId == socket.id)
                     socket.leave(socket.room)

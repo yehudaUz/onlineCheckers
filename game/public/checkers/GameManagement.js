@@ -42,7 +42,7 @@ class GameManagement {
             document.getElementById("offer draw").addEventListener("click", () => {
                 socket.emit('getEndGameState', id, (endGameState) => {
                     if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
-                        endGameState.draw = true;
+                        endGameState.isDraw = true;
                         handleEndGame(endGameState);
                     }
                 })
@@ -155,7 +155,7 @@ let handleEndGame = (endGameState) => {
         alert(endGameState.isBlack ? "Black WON!!" : "Red WON!!!");
         parent.removeIframe()
         return;
-    } else if (endGameState.draw) {
+    } else if (endGameState.isDraw) {
         alert("DRAW!!!");
         parent.removeIframe()
         return;
