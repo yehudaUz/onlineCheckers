@@ -5,7 +5,8 @@ const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 
 socket.on("usersUpdate", (users, error) => {
     console.log(socket.id);
-
+    console.log(JSON.stringify(users));
+    
     if (error)
         return console.log("User update error: " + error);
 
@@ -19,6 +20,8 @@ socket.on("usersUpdate", (users, error) => {
         allUsers[i].addEventListener("click", (info) => {
             const userName = info.target.innerText.split(' ')[0];
             socket.emit('sendReqToStartGameWith', userName, (error) => {
+                console.log("sendReqToStartGameWith  id: "  + socket.id);
+                
                 if (error)
                     alert(error)
             })
@@ -28,14 +31,21 @@ socket.on("usersUpdate", (users, error) => {
 socket.on('error', (errorMsg) => {
     location.href = '/transferPage.html?msg=' + errorMsg
 })
+socket.on('err', (errorMsg) => {
+    location.href = '/transferPage.html?msg=' + errorMsg
+})
 
 socket.on('msg', (msg) => {
     alert(msg)
 })
 
-socket.on('ReqToStartGameWith', (fromUser) => {
+socket.on('ReqToStartGameWith', (fromUser, isPlayerVsHimself) => {
     console.log("ReqToStartGameWith: " + JSON.stringify(fromUser));
-    if (fromUser) {
+    if (isPlayerVsHimself) {
+        const res = confirm('Hi! Are u sure u want to play against yourself??? your rank will not be upadted. ')
+        socket.emit('resToGameInvite', { fromUser, res })
+    }
+    else if (fromUser) {
         const res = confirm('Hi! ' + fromUser.username + " is inviting u to play! his rank is " + fromUser.rank + ".")
         socket.emit('resToGameInvite', { fromUser, res })
     }

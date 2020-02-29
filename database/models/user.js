@@ -77,7 +77,7 @@ userSchema.methods.generateAuthToken = async function () {
     const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET)
 
     user.tokens = user.tokens.concat({ token })
-    if (user.tokens.length > 4)
+    if (user.tokens.length > 1)
         user.tokens.shift();
     await user.save()
 

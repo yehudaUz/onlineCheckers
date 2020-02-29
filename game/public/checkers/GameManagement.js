@@ -62,6 +62,7 @@ class GameManagement {
             img.addEventListener("mouseup", (e) => {
                 e.preventDefault();
                 mouseDown = false;
+                console.log("game managmaent id: " + socket.id);
 
                 let elements, from, to;
                 try {
@@ -149,6 +150,8 @@ class GameManagement {
 
 
 let handleEndGame = (endGameState) => {
+    console.log("end game id: " + socket.id);
+    
     if (endGameState.opponentLeft) {
         alert("Unfourtenlly your opponents left the room :(")
         parent.removeIframe()
@@ -165,13 +168,17 @@ let handleEndGame = (endGameState) => {
 }
 
 socket.on('opponentLeft', () => {
+    console.log("opponent left");
+    
     handleEndGame({ win: false, isDraw: false, isWhite: false, opponentLeft: true })
 })
 
 socket.on('error', (errorMsg) => {
     location.href = '/transferPage.html?msg=' + errorMsg
 })
-
+socket.on('err', (errorMsg) => {
+    location.href = '/transferPage.html?msg=' + errorMsg
+})
 // socket.on('pleaseCheckConnection',()=> {
 //     console.log("pleaseCheckConnection");
 
