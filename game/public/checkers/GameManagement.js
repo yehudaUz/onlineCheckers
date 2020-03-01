@@ -33,27 +33,13 @@ class GameManagement {
 
         let addEventsToButtons = () => {
             document.getElementById("leave room").addEventListener("click", () => {
-                socket.emit('getEndGameState', false, (endGameState) => {
-                    handleEndGame({ userDecideToLeave: true })
-                })
+                handleEndGame({ userDecideToLeave: true })
             });
             document.getElementById("offer draw").addEventListener("click", () => {
-                socket.emit('getEndGameState', false, (endGameState) => {
-                    if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
-                        endGameState.isDraw = true;
-                        handleEndGame(endGameState);
-                    }
-                })
+                handleEndGame({ offerDraw: true })
             });
             document.getElementById("resign game").addEventListener("click", () => {
-                socket.emit('getEndGameState', false, (endGameState) => {
-                    if (confirm("Are u sure u want to loose the game?????")) {
-                        endGameState.win = true;
-                        endGameState.isBlack = !this.checkersLogic.isBlackTurn;
-                        handleEndGame(endGameState);
-                    }
-                })
-
+                handleEndGame({ resign: true })
             });
         }
 
@@ -77,26 +63,22 @@ class GameManagement {
                 if (elements[1] != null) {
                     socket.emit('isMoveTotalLegal', { from, to }, (legalMoveState) => {
                         if (legalMoveState.is) {
-                            //socket.emit('makeMove', { from, to }, (error) => {
+
                             this.boardManagement.makeMove(from, to, legalMoveState);
-                            //socket.emit('checkAndUpadateMiddleSequenceState', { legalMoveState, to }, (error) => {
-                            // if (error) {
-                            //     alert(error)
-                            // }
+
                             if (!legalMoveState.inMiddleSequence.is)
                                 this.boardManagement.updateKingsIfNecessary(to);
+
                             this.graphics.renderMessages(legalMoveState.message);
                             this.graphics.renderPieces();
                             addEventsToNewPics();
+
                             socket.emit('getEndGameState', false, (endGameState) => {
                                 handleEndGame(endGameState);
                             })
-                            //  })
-                            //})
                         }
                         else
                             this.graphics.renderMessages(legalMoveState.message);
-
                     })
                 }
                 this.graphics.renderPieces();
@@ -125,8 +107,6 @@ class GameManagement {
                 alert(error)
                 location.href = '/'
             }
-            // let f = { x: 0, y: 0 }, t = { x: 0, y: 0 }
-            // socket.emit('isMoveTotalLegal', { f, t })
         })
 
 
@@ -142,38 +122,71 @@ class GameManagement {
             })
         })
     }
-
-
 }
 
 
+const finishGame = () => {
+    socket.emit("leaveGame", (error) => {
+        if (error) {
+            alert('error leaving game: ' + error)
+            return
+        }
+        else
+            parent.removeIframe()
+    })
+}
 
 let handleEndGame = (endGameState) => {
-    console.log("end game id: " + socket.id);
     if (endGameState.userDecideToLeave) {
-        if (!confirm("Are u sure u want to leave???"))
-            return
-        parent.removeIframe()
-        return;
+        if (confirm("Are u sure u want to leave???"))
+            finishGame()
+    }
+    else if (endGameState.offerDraw) {
+        //   if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
+        if (!confirm("Are u sure u want to offer draw???")) {
+            socket.emit("offerDraw", (error, isDrawAccepted) => {
+                if (error)
+                    alert('error offering draw: ' + error)
+                else if (isDrawAccepted) {
+                    alert('Draw acceptd by your opponents!!!')
+                    finishGame()
+                }
+                else
+                    alert("Draw isn't accepted!!!!")
+            })
+        }
+    }
+    else if (endGameState.resign) {
+        //   if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
+        if (!confirm("Are u sure u want to resign?????")) {
+            socket.emit("resign", (error) => {
+                if (error)
+                    alert('error resigning!! error: ' + error)
+                else
+                    finishGame()
+            })
+        }
     }
     else if (endGameState.opponentLeft) {
         alert("Unfourtenlly your opponents left the room :(")
-        parent.removeIframe()
-        return;
+        finishGame()
     } else if (endGameState.win) {
         alert(endGameState.isBlack ? "Black WON!!" : "Red WON!!!");
-        parent.removeIframe()
-        return;
+        finishGame()
     } else if (endGameState.isDraw) {
         alert("DRAW!!!");
-        parent.removeIframe()
-        return;
+        finishGame()
     }
 }
 
+socket.on('opponentAsk4Draw', (callback) => {
+    if (confirm("Your opponents ask for draw!! confirm???"))
+        callback(true)
+    callback(false)
+})
+
 socket.on('opponentLeft', () => {
     console.log("opponent left");
-
     handleEndGame({ win: false, isDraw: false, isWhite: false, opponentLeft: true })
 })
 
@@ -183,8 +196,3 @@ socket.on('error', (errorMsg) => {
 socket.on('err', (errorMsg) => {
     location.href = '/transferPage.html?msg=' + errorMsg
 })
-// socket.on('pleaseCheckConnection',()=> {
-//     console.log("pleaseCheckConnection");
-
-//     socket.emit('checkConnection')
-// })

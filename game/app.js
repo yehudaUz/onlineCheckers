@@ -76,12 +76,13 @@ io.on('connection', async (socket) => {
         if (!user) {
             console.log("error authonitcate")
             socket.emit('err', 'Authontication failure!!')
-            io.sockets.disconnect();
-            io.sockets.close();
+            //socket.disconnect(true)
+            //io.sockets.disconnect();
+            //io.sockets.close();
             next()
         }
 
-        socket.token = token
+        socket.token = token//setting socket token and sockets property and room
         if (usersOnline[token] && !usersOnline[token].sockets.includes(socket.id)) {
             usersOnline[token].sockets.push(socket.id)
             socket.join(usersOnline[token].room, () => { //join updated socket id to game
@@ -121,8 +122,8 @@ io.on('connection', async (socket) => {
 
     const getTokenBySocketId = (opponenetSocketId) => {
         for (const [key, value] of Object.entries(usersOnline)) {
-            if (value.socketId == opponenetSocketId) {
-                return value
+            if (value.sockets.includes(opponenetSocketId)) {
+                return value.token
             }
         }
     }
@@ -142,7 +143,7 @@ io.on('connection', async (socket) => {
                     }
                 });
             }
-            socket.leave(socket.room, () => { })
+            socket.leave(socket.room, () => { /*socket.room = undefined */ })
             // socket.onlineUser = null, socket.roomKeys = null
             //            reqControl.set(socket.id, { time: new Date(), to: to.socketId })
             if (reqControl.get(socket.token))
@@ -186,8 +187,11 @@ io.on('connection', async (socket) => {
     }
     socket.on('sendReqToStartGameWith', (userName) => {
         let to = findInUsersOnlineByName(userName);
+        let request = reqControl.get(socket.token)
+        if (request && request.to == to.token && (new Date() - request.time) / 1000 > 30)//30 sec pass
+            reqControl.delete(request)
 
-        if (reqControl.get(socket.token) && reqControl.get(socket.token).to == to.token) {//request sent or in game with player
+        if (request && request.to == to.token) {//request sent or in game with player
             io.of('/').in(usersOnline[socket.token].room).clients((err, idsRes) => {
                 if (idsRes) {
                     if (!idsRes.includes(socket.id))
@@ -197,28 +201,30 @@ io.on('connection', async (socket) => {
                 }
             })
         }
-        else if (Object.keys(socket.rooms).length > 1) {//in the middle of game
+        else if (typeof usersOnline[socket.token].room !== "undefined") {//if (Object.keys(socket.rooms).length > 1) {//socket itself in the middle of game
             socket.emit('msg', 'You r in the middle of game.. please leave first!')
         }
-        else {//set new game
-            reqControl.set(socket.token, { time: new Date(), to: to.token })
-            console.log("sendReqToStartGameWith id:" + socket.id + " to: 1)" + to.sockets[0] + " 2) " + to.sockets[1] + "  userName: " + userName);
-            console.log("request control: " + JSON.stringify(reqControl))
+        else if (typeof to.room !== "undefined") { //the target socket in the middle of game
+            socket.emit('msg', 'Unfourtenly ' + userName + " is in the middle of game.. please wait until he is done.")
+        }
+        else {//send req to start new game            
             const fromUser = { username: usersOnline[socket.token].username, rank: usersOnline[socket.token].rank }
 
-            if (to.sockets.includes(socket.id))
+            if (to.sockets.includes(socket.id)) //player vs himself
                 io.to(usersOnline[socket.token].sockets[0]).emit("ReqToStartGameWith", fromUser, true)
-            else
+            else {
                 to.sockets.forEach(suka => io.to(suka).emit("ReqToStartGameWith", fromUser, false));
+                //reqControl.set(socket.token, { time: new Date(), to: to.token }) //add to request control avoid users annoy
+            }
         }
     })
 
     socket.on('resToGameInvite', ({ fromUser, res }) => {
         let from = findInUsersOnlineByName(fromUser.username)
         const to = usersOnline[socket.token]
-        from.room = roomNumber, to.room = roomNumber
 
         if (res) {
+            from.room = roomNumber, to.room = roomNumber
             rooms.push({ roomNumber, user1: socket.token, user2: from.token })
             from.sockets.forEach(suka => { io.sockets.connected[suka].join(roomNumber) })
             from.sockets.forEach(suka2 => io.to(suka2).emit('startGame', { isWhite: true, names: [from.username, to.username], id: suka2 }))
@@ -242,68 +248,83 @@ io.on('connection', async (socket) => {
         io.of('/').in(usersOnline[socket.token].room).clients((err, res) => {
             console.log("set new game, people in room: " + JSON.stringify(res));
 
-            if (res.length == 2) {
-                // io.to(socket.onlineUser.room).emit("pleaseCheckConnection")
+            if (res.length == 2)
                 checkersLogic.setNewRoom(usersOnline[socket.token].room, board)
-            }
-            else {
+            else
                 checkersLogic.setNewRoom(usersOnline[socket.token].room, board, true)
-                console.log("only 1 in room!!!!!!!");
-
-            }
-
         })
     })
 
-    socket.on('disconnect', () => {
+
+
+    const handleSocketLeaveOrDisconnect = (socket) => {
         console.log("socket " + socket.id + " disconnected.")
         if (!usersOnline[socket.token])
             return
+
         const room = usersOnline[socket.token].room;
-        // if (usersOnline[socket.token]) {
-        //     delete usersOnline[socket.token]
-        //     io.emit('usersUpdate', usersOnline)
-        // }
-        // if (socket.onlineUser)
         if (usersOnline[socket.token].sockets.includes(socket.id))
             if (usersOnline[socket.token].sockets.indexOf(socket.id) > -1)
                 usersOnline[socket.token].sockets.splice(usersOnline[socket.token].sockets.indexOf(5), 1);
 
 
         io.of('/').in(room).clients((err, idsRes) => {
-            // if (idsRes.length <= 1) {
 
             idsRes.forEach(id => {
                 let socketInRoom = io.sockets.connected[id]
                 console.log("remove socket: " + id + "   from room: " + room);
-
-                if (socketInRoom.token == socket.token)
+                reqControl.forEach(request => {
+                    if (request.to == getTokenBySocketId(id))
+                        reqControl.delete(request)
+                })
+                if (reqControl.get(getTokenBySocketId(id)))
+                    reqControl.delete(getTokenBySocketId(id))
+                if (socketInRoom.token == socket.token) {
+                    usersOnline[socket.token].room = undefined
+                    socketInRoom.room = undefined
                     socketInRoom.leave(room)
+                }
             })
 
-            idsRes.forEach(id => {
-                if (usersOnline[socket.token].sockets.includes(id))
-                    return
-            })
-            // const opponenetSocketId = idsRes[0]
-            // const opponenetSocketId2 = idsRes[1]
-            // console.log("send left to id1: " + idsRes[0] + "   id2: " + idsRes[1]);
-
-            // io.to(opponenetSocketId).emit('opponentLeft')
             idsRes.forEach(id => {
                 io.to(id).emit('opponentLeft')
             })
-            //socket.leave(socket.room, () => { })
-            // if (socket.onlineUser)
-            //     socket.onlineUser = null
-            // if (socket.roomKeys)
-            //     socket.roomKeys = null
+
+            // idsRes.forEach(id => {
+            //     if (usersOnline[socket.token].sockets.includes(id))
+            //         return
+            // })
+
             if (usersOnline[socket.token] && usersOnline[socket.token].sockets.length == 0) {
                 delete usersOnline[socket.token]
                 io.emit('usersUpdate', getPublicUserData())
             }
-            // }
         })
+    }
+
+    socket.on('offerDraw', (callback) => {
+        const room = usersOnline[socket.token].room;
+        io.of('/').in(room).clients((err, idsRes) => {
+            if (err)
+                callback(err)
+            idsRes.forEach(id => {
+                if (usersOnline[socket.token].sockets.includes(id))
+                    return //continue next foreach element
+                io.to(id).emit('opponentAsk4Draw', (res) => {
+                    callback(res)
+                })
+
+            })
+        })
+    })
+
+    socket.on('leaveGame', (callback) => {
+        handleSocketLeaveOrDisconnect(socket)
+        callback()
+    })
+
+    socket.on('disconnect', () => {
+        handleSocketLeaveOrDisconnect(socket)
     })
 })
 
