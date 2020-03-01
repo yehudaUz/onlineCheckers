@@ -128,13 +128,14 @@ io.on('connection', async (socket) => {
         }
     }
     socket.on('getEndGameState', (isOpponentMove, callback) => {
-        const endGameState = { win: true, isWhite: true, isDraw: false }
+        const room = usersOnline[socket.token].room
+        const endGameState = checkersLogic.getEndGameState(room) //{ win: true, isWhite: true, isDraw: false }
         if (endGameState.win || endGameState.isDraw) {
             if (!isOpponentMove) {
-                io.of('/').in(usersOnline[socket.token].room).clients((err, idsRes) => {
+                io.of('/').in(room).clients((err, idsRes) => {
                     if (idsRes.length > 2) {    //player against himself not getting ranks
                         const user = usersOnline[socket.token]
-                        const oppToken = rooms.find(room => room.roomNumber == usersOnline[socket.token].room).user1
+                        const oppToken = rooms.find(room => room.roomNumber == room).user1
                         //const opponenetSocketId = (socket.id != idsRes[0]) ? idsRes[0] : idsRes[1]
                         User.updateRank(socket.token, oppToken, endGameState, user.isWhite).then((res, rej) => {
                             usersOnline[socket.token].rank = res.userRating
@@ -143,7 +144,7 @@ io.on('connection', async (socket) => {
                     }
                 });
             }
-            socket.leave(socket.room, () => { /*socket.room = undefined */ })
+            socket.leave(room, () => { /*socket.room = undefined */ })
             // socket.onlineUser = null, socket.roomKeys = null
             //            reqControl.set(socket.id, { time: new Date(), to: to.socketId })
             if (reqControl.get(socket.token))
@@ -304,16 +305,23 @@ io.on('connection', async (socket) => {
 
     socket.on('offerDraw', (callback) => {
         const room = usersOnline[socket.token].room;
-        io.of('/').in(room).clients((err, idsRes) => {
-            if (err)
-                callback(err)
+        io.of('/').in(room).clients((idsRes) => {
+            if (idsRes != null)
+                idsRes.forEach(id => {
+                    if (usersOnline[socket.token].sockets.includes(id))
+                        return //continue next foreach element
+                    io.to(id).emit('opponentAsk4Draw', () => { })
+                })
+        })
+    })
+
+    socket.on('resToDraw', (res) => {
+        const room = usersOnline[socket.token].room;
+        io.of('/').in(room).clients((idsRes) => {
             idsRes.forEach(id => {
                 if (usersOnline[socket.token].sockets.includes(id))
                     return //continue next foreach element
-                io.to(id).emit('opponentAsk4Draw', (res) => {
-                    callback(res)
-                })
-
+                io.to(id).emit('opponentDrawRes', res)
             })
         })
     })

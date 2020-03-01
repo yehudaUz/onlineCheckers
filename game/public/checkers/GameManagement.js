@@ -142,23 +142,11 @@ let handleEndGame = (endGameState) => {
             finishGame()
     }
     else if (endGameState.offerDraw) {
-        //   if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
-        if (!confirm("Are u sure u want to offer draw???")) {
-            socket.emit("offerDraw", (error, isDrawAccepted) => {
-                if (error)
-                    alert('error offering draw: ' + error)
-                else if (isDrawAccepted) {
-                    alert('Draw acceptd by your opponents!!!')
-                    finishGame()
-                }
-                else
-                    alert("Draw isn't accepted!!!!")
-            })
-        }
+        if (confirm("Are u sure u want to offer draw???"))
+            socket.emit("offerDraw", (isDrawAccepted) => { })
     }
     else if (endGameState.resign) {
-        //   if (confirm((this.checkersLogic.isBlackTurn ? "Black" : "Red") + "  is offering a draw! Confirm???")) {
-        if (!confirm("Are u sure u want to resign?????")) {
+        if (confirm("Are u sure u want to resign?????")) {
             socket.emit("resign", (error) => {
                 if (error)
                     alert('error resigning!! error: ' + error)
@@ -180,9 +168,18 @@ let handleEndGame = (endGameState) => {
 }
 
 socket.on('opponentAsk4Draw', (callback) => {
+    console.log("opponentAsk4Draw " + socket.id)
     if (confirm("Your opponents ask for draw!! confirm???"))
-        callback(true)
-    callback(false)
+        socket.emit('resToDraw', true)//callback(true)
+    else
+        socket.emit('resToDraw', false)
+})
+
+socket.on('opponentDrawRes', (isDrawAccepted) => {
+    if (isDrawAccepted) {
+        alert("Draw accepted!!!")
+        finishGame()
+    }
 })
 
 socket.on('opponentLeft', () => {
