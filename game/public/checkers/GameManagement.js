@@ -32,10 +32,9 @@ class GameManagement {
         }
 
         let addEventsToButtons = () => {
-            document.getElementById("new game!!").addEventListener("click", () => {
+            document.getElementById("leave room").addEventListener("click", () => {
                 socket.emit('getEndGameState', false, (endGameState) => {
-                    if (confirm("Are u sure u want to start a new game???"))
-                        window.location.reload(false);
+                    handleEndGame({ userDecideToLeave: true })
                 })
             });
             document.getElementById("offer draw").addEventListener("click", () => {
@@ -151,8 +150,13 @@ class GameManagement {
 
 let handleEndGame = (endGameState) => {
     console.log("end game id: " + socket.id);
-    
-    if (endGameState.opponentLeft) {
+    if (endGameState.userDecideToLeave) {
+        if (!confirm("Are u sure u want to leave???"))
+            return
+        parent.removeIframe()
+        return;
+    }
+    else if (endGameState.opponentLeft) {
         alert("Unfourtenlly your opponents left the room :(")
         parent.removeIframe()
         return;
@@ -169,7 +173,7 @@ let handleEndGame = (endGameState) => {
 
 socket.on('opponentLeft', () => {
     console.log("opponent left");
-    
+
     handleEndGame({ win: false, isDraw: false, isWhite: false, opponentLeft: true })
 })
 

@@ -81,7 +81,7 @@ class Graphics {
 class Panel {
     constructor() {
         this.panelDiv = document.createElement("div");
-        this.makeButton("new game!!");
+        this.makeButton("leave room");
         this.makeButton("offer draw");
         this.makeButton("resign game");
         return this.panelDiv;

@@ -1,4 +1,3 @@
-console.clear()
 const express = require('express')
 const app = express();
 var cookieParser = require('cookie-parser');
@@ -26,10 +25,8 @@ app.use(function (req, res, next) {
 
 const server = http.createServer(app)
 const io = socketio(server)
-io.eio.pingTimeout = 1200000; // 2 minutes
-io.eio.pingInterval = 50000;
-
-const bearerToken = require('express-bearer-token');
+// io.eio.pingTimeout = 1200000; // 2 minutes
+// io.eio.pingInterval = 50000;
 
 const User = require('../database/models/user')
 
@@ -93,48 +90,6 @@ io.on('connection', async (socket) => {
             })
         } else
             next()
-
-        // if (Object.keys(usersOnline).length > 0) {
-        //     // if (!socket.onlineUser)
-        //     //     socket.onlineUser = usersOnline[token]
-        //            // if (keys(socket.rooms)[0] != socket.id)
-        //         //     socket.roomKeys = keys(socket.rooms)
-        //     }
-        // }
-
-
-
-        // if (!socket.onlineUser && usersOnline[token]) {
-        //     socket.onlineUser = usersOnline[token]
-        //     if (keys(socket.rooms)[0] != socket.id) {
-        //         socket.roomKeys = keys(socket.rooms)
-        //         // next()
-        //     }
-        //else
-        // socket.leave(socket.id, () => {
-        // next()
-        //     })
-        // }
-        // if (socket.onlineUser && socket.onlineUser.socketId != socket.id && io.sockets.connected[socket.onlineUser.socketId]) { //remove else double req start game
-        //     io.sockets.connected[socket.onlineUser.socketId].leave(socket.onlineUser.room, () => {//remove old socet id from room
-        //         let request = reqControl.get(socket.onlineUser.socketId)//update reqControl ket to ne socket.id
-        //         if (request) {
-        //             reqControl.set(socket.token, request)
-        //             if (reqControl.get(socket.token).to == socket.onlineUser.socketId)
-        //                 reqControl.get(socket.token).to = socket.token
-        //             reqControl.delete(socket.onlineUser.socketId)
-        //         }
-        //         socket.onlineUser.socketId = socket.id  //update user id in onlineUsers
-        //         socket.join(socket.onlineUser.room, () => { //join updated socket id to game
-        //             console.log("UP Id: " + socket.id + "Rooms: " + JSON.stringify(socket.rooms))
-        //             if (keys(socket.rooms)[0] != socket.id)
-        //                 socket.roomKeys = keys(socket.rooms)
-        //             next()
-        //         })
-        //     });
-        // }
-        // else
-        //     next()
     })
 
 
@@ -232,7 +187,7 @@ io.on('connection', async (socket) => {
     socket.on('sendReqToStartGameWith', (userName) => {
         let to = findInUsersOnlineByName(userName);
 
-        if (reqControl.get(socket.token) && reqControl.get(socket.token).to == to.token) {
+        if (reqControl.get(socket.token) && reqControl.get(socket.token).to == to.token) {//request sent or in game with player
             io.of('/').in(usersOnline[socket.token].room).clients((err, idsRes) => {
                 if (idsRes) {
                     if (!idsRes.includes(socket.id))
@@ -242,7 +197,10 @@ io.on('connection', async (socket) => {
                 }
             })
         }
-        else {
+        else if (Object.keys(socket.rooms).length > 1) {//in the middle of game
+            socket.emit('msg', 'You r in the middle of game.. please leave first!')
+        }
+        else {//set new game
             reqControl.set(socket.token, { time: new Date(), to: to.token })
             console.log("sendReqToStartGameWith id:" + socket.id + " to: 1)" + to.sockets[0] + " 2) " + to.sockets[1] + "  userName: " + userName);
             console.log("request control: " + JSON.stringify(reqControl))
@@ -315,6 +273,13 @@ io.on('connection', async (socket) => {
         io.of('/').in(room).clients((err, idsRes) => {
             // if (idsRes.length <= 1) {
 
+            idsRes.forEach(id => {
+                let socketInRoom = io.sockets.connected[id]
+                console.log("remove socket: " + id + "   from room: " + room);
+
+                if (socketInRoom.token == socket.token)
+                    socketInRoom.leave(room)
+            })
 
             idsRes.forEach(id => {
                 if (usersOnline[socket.token].sockets.includes(id))
