@@ -181,9 +181,9 @@ io.on('connection', async (socket) => {
                         const oppToken = rooms.find(room => room.roomNumber == usersOnline[socket.token].room).user1
                         //const opponenetSocketId = (socket.id != idsRes[0]) ? idsRes[0] : idsRes[1]
                         User.updateRank(socket.token, oppToken, endGameState, user.isWhite).then((res, rej) => {
-                                usersOnline[socket.token].rank = res.userRating
-                                usersOnline[oppToken].rank = res.opponentRating
-                            })
+                            usersOnline[socket.token].rank = res.userRating
+                            usersOnline[oppToken].rank = res.opponentRating
+                        })
                     }
                 });
             }
@@ -307,25 +307,37 @@ io.on('connection', async (socket) => {
         //     io.emit('usersUpdate', usersOnline)
         // }
         // if (socket.onlineUser)
+        if (usersOnline[socket.token].sockets.includes(socket.id))
+            if (usersOnline[socket.token].sockets.indexOf(socket.id) > -1)
+                usersOnline[socket.token].sockets.splice(usersOnline[socket.token].sockets.indexOf(5), 1);
+
+
         io.of('/').in(room).clients((err, idsRes) => {
-            if (idsRes.length <= 1) {
-                const opponenetSocketId = idsRes[0]
-                const opponenetSocketId2 = idsRes[1]
-                console.log("send left to id1: " + idsRes[0] + "   id2: " + idsRes[1]);
+            // if (idsRes.length <= 1) {
 
-                io.to(opponenetSocketId).emit('opponentLeft')
-                io.to(opponenetSocketId2).emit('opponentLeft')
 
-                //socket.leave(socket.room, () => { })
-                // if (socket.onlineUser)
-                //     socket.onlineUser = null
-                // if (socket.roomKeys)
-                //     socket.roomKeys = null
-                if (usersOnline[socket.token]) {
-                    delete usersOnline[socket.token]
-                    io.emit('usersUpdate', getPublicUserData())
-                }
+            idsRes.forEach(id => {
+                if (usersOnline[socket.token].sockets.includes(id))
+                    return
+            })
+            // const opponenetSocketId = idsRes[0]
+            // const opponenetSocketId2 = idsRes[1]
+            // console.log("send left to id1: " + idsRes[0] + "   id2: " + idsRes[1]);
+
+            // io.to(opponenetSocketId).emit('opponentLeft')
+            idsRes.forEach(id => {
+                io.to(id).emit('opponentLeft')
+            })
+            //socket.leave(socket.room, () => { })
+            // if (socket.onlineUser)
+            //     socket.onlineUser = null
+            // if (socket.roomKeys)
+            //     socket.roomKeys = null
+            if (usersOnline[socket.token] && usersOnline[socket.token].sockets.length == 0) {
+                delete usersOnline[socket.token]
+                io.emit('usersUpdate', getPublicUserData())
             }
+            // }
         })
     })
 })
