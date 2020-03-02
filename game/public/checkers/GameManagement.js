@@ -33,13 +33,13 @@ class GameManagement {
 
         let addEventsToButtons = () => {
             document.getElementById("leave room").addEventListener("click", () => {
-                handleEndGame({ userDecideToLeave: true })
+                leaveRoom()
             });
             document.getElementById("offer draw").addEventListener("click", () => {
-                handleEndGame({ offerDraw: true })
+                offerDraw()
             });
             document.getElementById("resign game").addEventListener("click", () => {
-                handleEndGame({ resign: true })
+                resignGame()
             });
         }
 
@@ -125,40 +125,53 @@ class GameManagement {
 }
 
 
+const offerDraw = () => {
+    if (confirm("Are u sure u want to offer draw???"))
+        socket.emit("offerDraw", () => {//(endGameState) => {
+            //  handleEndGame(endGameState)
+        })
+}
+
 const finishGame = () => {
-    socket.emit("leaveGame", (error) => {
-        if (error) {
-            alert('error leaving game: ' + error)
-            return
-        }
-        else
-            parent.removeIframe()
+    socket.emit("leaveGame", () => {
+        // handleEndGame(endGameState)
+        parent.removeIframe()
     })
 }
 
-let handleEndGame = (endGameState) => {
-    if (endGameState.userDecideToLeave) {
-        if (confirm("Are u sure u want to leave???"))
-            finishGame()
+
+const resignGame = () => {
+    if (confirm("Are u sure u want to resign?????")) {
+        socket.emit("resign", (endGameState) => {
+            // if (error)
+            //     alert('error resigning!! error: ' + error)
+            // else
+            handleEndGame(endGameState)
+        })
     }
-    else if (endGameState.offerDraw) {
-        if (confirm("Are u sure u want to offer draw???"))
-            socket.emit("offerDraw", () => { })
+}
+
+const leaveRoom = () => {
+    if (confirm("Are u sure u want to leave???"))
+        finishGame()
+}
+
+const handleEndGame = (endGameState) => {
+    let isBlack = false
+    if (window.parent.document.getElementById('black'))
+        isBlack = true
+
+    // if (endGameState.userLeft)
+    //     finishGame()
+    else if (endGameState.opponentLeft) {
+        alert("Unfortunately your opponents left the room :(")
+        finishGame()
     }
     else if (endGameState.resign) {
-        if (confirm("Are u sure u want to resign?????")) {
-            socket.emit("resign", (error) => {
-                if (error)
-                    alert('error resigning!! error: ' + error)
-                else
-                    finishGame()
-            })
-        }
-    } else if (endGameState.opponentResign) {
-        alert("Congrat! ur opponent is a pussy!! Resign is 4 the weak! You win!!!")
-        finishGame()
-    } else if (endGameState.opponentLeft) {
-        alert("Unfortunately your opponents left the room :(")
+        if (endGameState.isBlack != isBlack)
+            alert("Congrat! ur opponent is a pussy!! Resign is 4 the weak! You win!!!")
+        else
+            alert("Pussy! u lost!")
         finishGame()
     } else if (endGameState.win) {
         alert(endGameState.isBlack ? "Black WON!!" : "Red WON!!!");
@@ -169,6 +182,10 @@ let handleEndGame = (endGameState) => {
     }
 }
 
+socket.on('endGameUpdate', (endGameState) => {
+    handleEndGame(endGameState)
+})
+
 socket.on('opponentAsk4Draw', (callback) => {
     console.log("opponentAsk4Draw " + socket.id)
     if (confirm("Your opponents ask for draw!! confirm???"))
@@ -177,9 +194,9 @@ socket.on('opponentAsk4Draw', (callback) => {
         socket.emit('resToDraw', false)
 })
 
-socket.on('opponentDrawRes', (isDrawAccepted) => {
+socket.on('opponentDrawRes', (isDrawAccepted, endGameState) => {
     if (isDrawAccepted)
-        handleEndGame({ isDraw: true })
+        handleEndGame(endGameState)
     else
         alert("Unfortunately your opponets don't give a shit about u and decline your offer to draw...")
 })

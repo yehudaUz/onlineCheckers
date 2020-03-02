@@ -317,30 +317,34 @@ io.on('connection', async (socket) => {
 
     socket.on('resign', (callback) => {
         const room = usersOnline[socket.token].room;
+        const endGameState = checkersLogic.resignGame(usersOnline[socket.token],room)
         io.of('/').in(room).clients((err, idsRes) => {
             idsRes.forEach(id => {
-                if (usersOnline[socket.token].sockets.includes(id))
-                    return //continue next foreach element
-                io.to(id).emit('opponentResign')
+                // if (usersOnline[socket.token].sockets.includes(id))
+                //     return //continue next foreach element
+                io.to(id).emit('endGameUpdate',endGameState)
             })
-            callback()
+            callback(endGameState)
         })
     })
  //  add emit dataUpdate => make cside to emit endgame status
     socket.on('resToDraw', (res) => {
         const room = usersOnline[socket.token].room;
+        const endGameState = checkersLogic.updateResToDraw(usersOnline[socket.token],room,res)
         io.of('/').in(room).clients((err, idsRes) => {
             idsRes.forEach(id => {
                 // if (usersOnline[socket.token].sockets.includes(id))
                 //     return //continue next foreach element
-                io.to(id).emit('opponentDrawRes', res)
+                io.to(id).emit('opponentDrawRes', (res,endGameState))
             })
         })
     })
 
     socket.on('leaveGame', (callback) => {
+        const room = usersOnline[socket.token].room;
+        //const endGameState = checkersLogic.getEndGameState(room) //updateResToDraw(usersOnline[socket.token],room,res)
         handleSocketLeaveOrDisconnect(socket)
-        callback()
+        callback()//callback(endGameState)
     })
 
     socket.on('disconnect', () => {

@@ -6,7 +6,7 @@ const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 socket.on("usersUpdate", (users, error) => {
     console.log(socket.id);
     console.log(JSON.stringify(users));
-    
+
     if (error)
         return console.log("User update error: " + error);
 
@@ -20,8 +20,8 @@ socket.on("usersUpdate", (users, error) => {
         allUsers[i].addEventListener("click", (info) => {
             const userName = info.target.innerText.split(' ')[0];
             socket.emit('sendReqToStartGameWith', userName, (error) => {
-                console.log("sendReqToStartGameWith  id: "  + socket.id);
-                
+                console.log("sendReqToStartGameWith  id: " + socket.id);
+
                 if (error)
                     alert(error)
             })
@@ -57,8 +57,9 @@ socket.on('reqCanceld', (userName) => {
     alert("Unfortunately " + userName + " is decline your offer to play :(\nTry with another user :)")
 })
 
-//let suka = 0
+let isUserColorblack
 socket.on('startGame', ({ isWhite, names, id }) => {
+    isUserColorblack = !isWhite
     console.log("start game");
     console.log(socket.id);
 
@@ -71,23 +72,18 @@ socket.on('startGame', ({ isWhite, names, id }) => {
     document.getElementById("gameDiv").appendChild(iframe)
     iframe.className = 'embeddedPage'
 
-    let socketID = document.createElement("div")
-    socketID.id = id
-    socketID.className = "socketID"
+    // let socketID = document.createElement("div")
+    // socketID.id = id
+    // socketID.className = "socketID"
+    const userColor =  document.createElement('div')
 
-    window.parent.document.getElementById('gameDiv').appendChild(socketID)
+
+    window.parent.document.getElementById('gameDiv').appendChild(userColor)// socketID)
 
     iframe.onload = function () {  // before setting 'src'
         let page = document.getElementsByClassName("embeddedPage");
         let htmlDocument = page[0].contentWindow ? page[0].contentWindow.document : page[0].contentDocument //page.contentDocument || page.contentWindow.document//page.contentDocument;
-        //htmlDocument.getElementsByClassName("black")
-
-        // let socketID = htmlDocument.createElement("div")
-        // socketID.id = id
-        // socketID.className = "socketID"
-
-        //htmlDocument.body.appendChild(socketID);
-        // perent.appendChild(socketID);
+    
 
         const nameTitle = htmlDocument.createElement('h3')
         nameTitle.innerText = names[0]
@@ -104,7 +100,9 @@ socket.on('startGame', ({ isWhite, names, id }) => {
         if (isWhite) {
             panel.after(nameTitle)
             game.prepend(nameTitle2)
+            userColor.id = "white"
         } else {
+            userColor.id = "black"
             panel.after(nameTitle2)
             game.prepend(nameTitle)
         }

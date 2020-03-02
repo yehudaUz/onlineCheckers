@@ -13,7 +13,7 @@ class CheckersLogic {
             isBlackTurn: false,
             eaten: [],
             board,
-            endGamestate: { isDraw: false, win: false, isBlack: false },
+            endGamestate: { isDraw: false, win: false, isBlack: false, resign: false, left: false },
             fifteenKingsMoveCounter: 0,
             legalMoveState: {
                 legal: false,
@@ -100,6 +100,20 @@ class CheckersLogic {
 
         this.gamesStatus[index].legalMoveState.legal = true;
         return this.gamesStatus[index].legalMoveState;
+    }
+
+    resignGame(user, index) {
+        this.gamesStatus[index].endGamestate.isBlack = !user.isWhite
+        this.gamesStatus[index].endGamestate.resign = true
+        return this.gamesStatus[index].endGamestate
+    }
+
+    updateResToDraw(user, index, res) {
+        if (res)
+            this.gamesStatus[index].endGamestate.isDraw = true
+        else
+            this.gamesStatus[index].endGamestate.isDrawRefused = true
+        return this.gamesStatus[index].endGamestate
     }
 
     isMoveTotalLegal(from, to, index, user) {
