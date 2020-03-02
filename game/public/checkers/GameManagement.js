@@ -143,7 +143,7 @@ let handleEndGame = (endGameState) => {
     }
     else if (endGameState.offerDraw) {
         if (confirm("Are u sure u want to offer draw???"))
-            socket.emit("offerDraw", (isDrawAccepted) => { })
+            socket.emit("offerDraw", () => { })
     }
     else if (endGameState.resign) {
         if (confirm("Are u sure u want to resign?????")) {
@@ -154,9 +154,11 @@ let handleEndGame = (endGameState) => {
                     finishGame()
             })
         }
-    }
-    else if (endGameState.opponentLeft) {
-        alert("Unfourtenlly your opponents left the room :(")
+    } else if (endGameState.opponentResign) {
+        alert("Congrat! ur opponent is a pussy!! Resign is 4 the weak! You win!!!")
+        finishGame()
+    } else if (endGameState.opponentLeft) {
+        alert("Unfortunately your opponents left the room :(")
         finishGame()
     } else if (endGameState.win) {
         alert(endGameState.isBlack ? "Black WON!!" : "Red WON!!!");
@@ -176,15 +178,19 @@ socket.on('opponentAsk4Draw', (callback) => {
 })
 
 socket.on('opponentDrawRes', (isDrawAccepted) => {
-    if (isDrawAccepted) {
-        alert("Draw accepted!!!")
-        finishGame()
-    }
+    if (isDrawAccepted)
+        handleEndGame({ isDraw: true })
+    else
+        alert("Unfortunately your opponets don't give a shit about u and decline your offer to draw...")
 })
 
 socket.on('opponentLeft', () => {
     console.log("opponent left");
     handleEndGame({ win: false, isDraw: false, isWhite: false, opponentLeft: true })
+})
+
+socket.on('opponentResign', () => {
+    handleEndGame({ win: true, isDraw: false, isWhite: undefined, opponentResign: true })
 })
 
 socket.on('error', (errorMsg) => {

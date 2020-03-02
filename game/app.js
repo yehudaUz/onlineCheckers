@@ -206,7 +206,7 @@ io.on('connection', async (socket) => {
             socket.emit('msg', 'You r in the middle of game.. please leave first!')
         }
         else if (typeof to.room !== "undefined") { //the target socket in the middle of game
-            socket.emit('msg', 'Unfourtenly ' + userName + " is in the middle of game.. please wait until he is done.")
+            socket.emit('msg', 'Unfortunately ' + userName + " is in the middle of game.. please wait until he is done.")
         }
         else {//send req to start new game            
             const fromUser = { username: usersOnline[socket.token].username, rank: usersOnline[socket.token].rank }
@@ -249,7 +249,7 @@ io.on('connection', async (socket) => {
         io.of('/').in(usersOnline[socket.token].room).clients((err, res) => {
             console.log("set new game, people in room: " + JSON.stringify(res));
 
-            if (res.length == 2)
+            if (res.length >= 2)
                 checkersLogic.setNewRoom(usersOnline[socket.token].room, board)
             else
                 checkersLogic.setNewRoom(usersOnline[socket.token].room, board, true)
@@ -305,22 +305,34 @@ io.on('connection', async (socket) => {
 
     socket.on('offerDraw', (callback) => {
         const room = usersOnline[socket.token].room;
-        io.of('/').in(room).clients((idsRes) => {
+        io.of('/').in(room).clients((err, idsRes) => {
             if (idsRes != null)
                 idsRes.forEach(id => {
                     if (usersOnline[socket.token].sockets.includes(id))
                         return //continue next foreach element
-                    io.to(id).emit('opponentAsk4Draw', () => { })
+                    io.to(id).emit('opponentAsk4Draw')
                 })
         })
     })
 
-    socket.on('resToDraw', (res) => {
+    socket.on('resign', (callback) => {
         const room = usersOnline[socket.token].room;
-        io.of('/').in(room).clients((idsRes) => {
+        io.of('/').in(room).clients((err, idsRes) => {
             idsRes.forEach(id => {
                 if (usersOnline[socket.token].sockets.includes(id))
                     return //continue next foreach element
+                io.to(id).emit('opponentResign')
+            })
+            callback()
+        })
+    })
+ //  add emit dataUpdate => make cside to emit endgame status
+    socket.on('resToDraw', (res) => {
+        const room = usersOnline[socket.token].room;
+        io.of('/').in(room).clients((err, idsRes) => {
+            idsRes.forEach(id => {
+                // if (usersOnline[socket.token].sockets.includes(id))
+                //     return //continue next foreach element
                 io.to(id).emit('opponentDrawRes', res)
             })
         })

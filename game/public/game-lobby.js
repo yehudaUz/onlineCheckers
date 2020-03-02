@@ -54,7 +54,7 @@ socket.on('ReqToStartGameWith', (fromUser, isPlayerVsHimself) => {
 socket.on('reqCanceld', (userName) => {
     console.log(socket.id);
 
-    alert("Unfourtenly " + userName + " is decline your offer to play :(\nTry with another user :)")
+    alert("Unfortunately " + userName + " is decline your offer to play :(\nTry with another user :)")
 })
 
 //let suka = 0
