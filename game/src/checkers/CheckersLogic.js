@@ -8,7 +8,7 @@ class CheckersLogic {
         return this.gamesStatus[index].board
     }
 
-    setNewRoom(roomNumber, board, isSameUser) {
+    setNewRoom(roomNumber, board) {
         this.gamesStatus[roomNumber] = {
             isBlackTurn: false,
             eaten: [],
@@ -22,8 +22,6 @@ class CheckersLogic {
                 message: []
             }
         }
-        if (isSameUser)
-            this.gamesStatus[roomNumber].isSameUser = true
     }
 
     isMoveLegal({ from, to }, index, user) {
@@ -44,7 +42,7 @@ class CheckersLogic {
         } else if (this.gamesStatus[index].board[from.y][from.x].isBlack != this.gamesStatus[index].isBlackTurn) {
             this.gamesStatus[index].legalMoveState.message.push("Not your turn!")
             return this.gamesStatus[index].legalMoveState;
-        } else if (user && !this.gamesStatus[index].isSameUser &&
+        } else if (user && !user.isVsHimself &&
             this.gamesStatus[index].board[from.y][from.x].isBlack == user.isWhite) {
             this.gamesStatus[index].legalMoveState.message.push("Not your pieces!");
             return this.gamesStatus[index].legalMoveState;
@@ -182,7 +180,7 @@ class CheckersLogic {
         if (this.isDraw(this.gamesStatus[index]))
             return this.gamesStatus[index].endGamestate;
         this.isWin(this.gamesStatus[index], index);
-       // this.gamesStatus[index].endGamestate.win = true//////////////////////////////////////////
+        // this.gamesStatus[index].endGamestate.win = true//////////////////////////////////////////
         return this.gamesStatus[index].endGamestate;
     }
 

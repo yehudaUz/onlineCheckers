@@ -11,7 +11,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-const port = process.env.PORT
+const port = process.env.PORT || 3000
 const routers = require('./src/routers')
 app.use(routers)
 
@@ -227,8 +227,8 @@ io.on('connection', async (socket) => {
     })
 
 
-    socket.on('gameConfigured', ({ board }) => {
-        checkersLogic.setNewRoom(usersOnline[socket.token].room, board, usersOnline[socket.token].isVsHimself)
+    socket.on('gameConfigured', ({ board }) => {        
+        checkersLogic.setNewRoom(usersOnline[socket.token].room)
 
         io.of('/').in(usersOnline[socket.token].room).clients((err, res) => {
             console.log("set new game, people in room: " + JSON.stringify(res));
@@ -355,6 +355,6 @@ io.on('connection', async (socket) => {
     })
 })
 
-server.listen(process.env.PORT, () => {
-    console.log('server start listening on port ' + process.env.PORT);
+server.listen(port, () => {
+    console.log('server start listening on port ' + port);
 })

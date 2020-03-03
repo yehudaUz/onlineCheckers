@@ -68,14 +68,15 @@ socket.on('startGame', ({ isWhite, names, id }) => {
     //     return
 
     let iframe = document.createElement('iframe');
-    iframe.setAttribute('src', "https://quiet-shore-40615.herokuapp.com/checkers/index.html");
+    iframe.setAttribute('src', " https://quiet-shore-40615.herokuapp.com/index.html");
+    // iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
     document.getElementById("gameDiv").appendChild(iframe)
     iframe.className = 'embeddedPage'
 
     // let socketID = document.createElement("div")
     // socketID.id = id
     // socketID.className = "socketID"
-    const userColor =  document.createElement('div')
+    const userColor = document.createElement('div')
 
 
     window.parent.document.getElementById('gameDiv').appendChild(userColor)// socketID)
@@ -83,7 +84,7 @@ socket.on('startGame', ({ isWhite, names, id }) => {
     iframe.onload = function () {  // before setting 'src'
         let page = document.getElementsByClassName("embeddedPage");
         let htmlDocument = page[0].contentWindow ? page[0].contentWindow.document : page[0].contentDocument //page.contentDocument || page.contentWindow.document//page.contentDocument;
-    
+
 
         const nameTitle = htmlDocument.createElement('h3')
         nameTitle.innerText = names[0]
