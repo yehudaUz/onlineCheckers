@@ -94,7 +94,7 @@ io.on('connection', async (socket) => {
         if (user) {
             const userData = {
                 username: user.name, rank: user.rating, sockets: [socket.id], token,
-                room: undefined, isWhite: undefined
+                room: undefined, isWhite: undefined, isVsHimself: false
             }
             const userIn = findInUsersOnlineByName(user.name)
             if (userIn)
@@ -213,9 +213,11 @@ io.on('connection', async (socket) => {
             from.sockets.forEach(suka2 => io.to(suka2).emit('startGame', { isWhite: true, names: [from.username, to.username], id: suka2 }))
             from.isWhite = true
             to.sockets.forEach(suka3 => {
-                if (!from.sockets.includes(suka3)) { //for 1 player against himself
+                if (!from.sockets.includes(suka3)) { //not send twice for 1 player against himself
                     io.to(suka3).emit('startGame', { isWhite: false, names: [to.username, from.username], id: suka3 })
                     to.isWhite = false
+                } else {
+                    from.isVsHimself = true
                 }
             })
             roomNumber++;
@@ -226,7 +228,7 @@ io.on('connection', async (socket) => {
 
 
     socket.on('gameConfigured', ({ board }) => {
-        checkersLogic.setNewRoom(usersOnline[socket.token].room, board)
+        checkersLogic.setNewRoom(usersOnline[socket.token].room, board, usersOnline[socket.token].isVsHimself)
 
         io.of('/').in(usersOnline[socket.token].room).clients((err, res) => {
             console.log("set new game, people in room: " + JSON.stringify(res));
