@@ -120,7 +120,7 @@ io.on('connection', async (socket) => {
                 io.of('/').in(room).clients((err, idsRes) => {
                     if (idsRes.length > 2) {    //player against himself not getting ranks
                         const user = usersOnline[socket.token]
-                        const oppToken = room.user1 //rooms.find(room => room.roomNumber == room).user1
+                        const oppToken = rooms.find(room => room.roomNumber == room.roomNumber).user1
                         User.updateRank(socket.token, oppToken, endGameState, user.isWhite).then((res, rej) => {
                             usersOnline[socket.token].rank = res.userRating
                             usersOnline[oppToken].rank = res.opponentRating
