@@ -68,7 +68,7 @@ socket.on('startGame', ({ isWhite, names, id }) => {
     //     return
 
     let iframe = document.createElement('iframe');
-    iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
+    iframe.setAttribute('src', "https://quiet-shore-40615.herokuapp.com/checkers/index.html");
     document.getElementById("gameDiv").appendChild(iframe)
     iframe.className = 'embeddedPage'
 
