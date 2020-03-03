@@ -354,5 +354,5 @@ io.on('connection', async (socket) => {
 })
 
 server.listen(process.env.PORT, () => {
-    console.log('server start listening on port 3000!');
+    console.log('server start listening on port ' + process.env.PORT);
 })
