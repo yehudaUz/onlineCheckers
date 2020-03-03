@@ -171,14 +171,14 @@ io.on('connection', async (socket) => {
     socket.on('sendReqToStartGameWith', (userName) => {
         let to = findInUsersOnlineByName(userName);
         let request = reqControl.get(socket.token)
-        if (request && request.to == to.token && (new Date() - request.time) / 1000 > 30)//30 sec pass
-            reqControl.delete(request)
+        // if (request && request.to == to.token && (new Date() - request.time) / 1000 > 30)//30 sec pass
+        //     reqControl.delete(request)
 
         if (request && request.to == to.token) {//request sent or in game with player
             io.of('/').in(usersOnline[socket.token].room).clients((err, idsRes) => {
                 if (idsRes) {
                     if (!idsRes.includes(socket.id))
-                        return socket.emit('msg', userName + " didn't respond (yet) to your offer..\nPlease wait patiencely or choose another player.");
+                        return socket.emit('msg',"U alredy sent him request and he declined ur offer, to avoid abuse u can't send more req until u logout or he will.");
                     else
                         return socket.emit('msg', "You r in the game with this player....");
                 }
@@ -197,7 +197,7 @@ io.on('connection', async (socket) => {
                 io.to(usersOnline[socket.token].sockets[0]).emit("ReqToStartGameWith", fromUser, true)
             else {
                 to.sockets.forEach(suka => io.to(suka).emit("ReqToStartGameWith", fromUser, false));
-                //reqControl.set(socket.token, { time: new Date(), to: to.token }) //add to request control avoid users annoy
+                reqControl.set(socket.token, { time: new Date(), to: to.token }) //add to request control avoid users annoy
             }
         }
     })
@@ -244,6 +244,12 @@ io.on('connection', async (socket) => {
 
     const handleSocketLeaveOrDisconnect = (socket) => {
         console.log("socket " + socket.id + " disconnected.")
+        reqControl.forEach(request => {
+            if (request.to == getTokenBySocketId(socket.id))
+                reqControl.delete(request)
+        })
+        if (reqControl.get(getTokenBySocketId(socket.id)))
+            reqControl.delete(getTokenBySocketId(socket.id))
         if (!usersOnline[socket.token])
             return
 
@@ -258,12 +264,12 @@ io.on('connection', async (socket) => {
             idsRes.forEach(id => {
                 let socketInRoom = io.sockets.connected[id]
                 console.log("remove socket: " + id + "   from room: " + room);
-                // reqControl.forEach(request => {
-                //     if (request.to == getTokenBySocketId(id))
-                //         reqControl.delete(request)
-                // })
-                // if (reqControl.get(getTokenBySocketId(id)))
-                //     reqControl.delete(getTokenBySocketId(id))
+                reqControl.forEach(request => {
+                    if (request.to == getTokenBySocketId(id))
+                        reqControl.delete(request)
+                })
+                if (reqControl.get(getTokenBySocketId(id)))
+                    reqControl.delete(getTokenBySocketId(id))
                 if (socketInRoom.token == socket.token) {
                     // usersOnline[socket.token].room = undefined
                     // socketInRoom.room = undefined
