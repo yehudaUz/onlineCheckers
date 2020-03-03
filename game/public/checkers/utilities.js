@@ -9,7 +9,7 @@ function deleteFromDom(elmentType) {
     let childrens = document.body.childNodes;
     for (let i = 0; i < childrens.length; i++) {
         if (childrens[i].nodeName.toLocaleLowerCase() == elmentType);
-        childrens[i].parentElement.removeChild(childrens[i]);
+        childrens[i].Element.removeChild(childrens[i]);
     }
 };
 

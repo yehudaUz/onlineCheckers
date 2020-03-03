@@ -54,19 +54,6 @@ const parseCookies = (str) => {
     return null;
 }
 
-let keys = function (object) {
-    if (!(object && typeof object === 'object')) {
-        return null;
-    }
-    var result = [];
-    for (var key in object) {
-        if (object.hasOwnProperty(key)) {
-            result.push(key)
-        }
-    }
-    return result;
-}
-
 io.on('connection', async (socket) => {
     console.log('New WebSocket connection')
 
@@ -76,7 +63,7 @@ io.on('connection', async (socket) => {
         if (!user) {
             console.log("error authonitcate")
             socket.emit('err', 'Authontication failure!!')
-            //socket.disconnect(true)
+            socket.disconnect(true)
             //io.sockets.disconnect();
             //io.sockets.close();
             next()
@@ -92,8 +79,6 @@ io.on('connection', async (socket) => {
         } else
             next()
     })
-
-
 
     const getPublicUserData = () => {
         let publicUsersData = []
@@ -135,8 +120,7 @@ io.on('connection', async (socket) => {
                 io.of('/').in(room).clients((err, idsRes) => {
                     if (idsRes.length > 2) {    //player against himself not getting ranks
                         const user = usersOnline[socket.token]
-                        const oppToken = rooms.find(room => room.roomNumber == room).user1
-                        //const opponenetSocketId = (socket.id != idsRes[0]) ? idsRes[0] : idsRes[1]
+                        const oppToken = room.user1 //rooms.find(room => room.roomNumber == room).user1
                         User.updateRank(socket.token, oppToken, endGameState, user.isWhite).then((res, rej) => {
                             usersOnline[socket.token].rank = res.userRating
                             usersOnline[oppToken].rank = res.opponentRating
@@ -144,9 +128,7 @@ io.on('connection', async (socket) => {
                     }
                 });
             }
-            socket.leave(room, () => { /*socket.room = undefined */ })
-            // socket.onlineUser = null, socket.roomKeys = null
-            //            reqControl.set(socket.id, { time: new Date(), to: to.socketId })
+            socket.leave(room, () => { })
             if (reqControl.get(socket.token))
                 reqControl.delete(socket.token)
             io.emit('usersUpdate', getPublicUserData())
@@ -158,7 +140,7 @@ io.on('connection', async (socket) => {
     socket.on('isMoveTotalLegal', ({ from, to }, callback) => {
         console.log(usersOnline);
         const room = usersOnline[socket.token].room;
-        const legalMoveState = checkersLogic.isMoveTotalLegal(from, to, room, usersOnline[socket.token])/////////////////////////////////
+        const legalMoveState = checkersLogic.isMoveTotalLegal(from, to, room, usersOnline[socket.token])
         if (legalMoveState.is) {
 
             boardManagement.makeMove(from, to, legalMoveState, checkersLogic.getBoardByIndex(room));
@@ -274,27 +256,24 @@ io.on('connection', async (socket) => {
             idsRes.forEach(id => {
                 let socketInRoom = io.sockets.connected[id]
                 console.log("remove socket: " + id + "   from room: " + room);
-                reqControl.forEach(request => {
-                    if (request.to == getTokenBySocketId(id))
-                        reqControl.delete(request)
-                })
-                if (reqControl.get(getTokenBySocketId(id)))
-                    reqControl.delete(getTokenBySocketId(id))
+                // reqControl.forEach(request => {
+                //     if (request.to == getTokenBySocketId(id))
+                //         reqControl.delete(request)
+                // })
+                // if (reqControl.get(getTokenBySocketId(id)))
+                //     reqControl.delete(getTokenBySocketId(id))
                 if (socketInRoom.token == socket.token) {
-                    usersOnline[socket.token].room = undefined
-                    socketInRoom.room = undefined
+                    // usersOnline[socket.token].room = undefined
+                    // socketInRoom.room = undefined
                     socketInRoom.leave(room)
                 }
             })
 
+            const endGameState = checkersLogic.updateLeaveRoom(usersOnline[socket.token], room)
             idsRes.forEach(id => {
-                io.to(id).emit('opponentLeft')
+                if (endGameState)
+                    io.to(id).emit('endGameUpdate', endGameState)
             })
-
-            // idsRes.forEach(id => {
-            //     if (usersOnline[socket.token].sockets.includes(id))
-            //         return
-            // })
 
             if (usersOnline[socket.token] && usersOnline[socket.token].sockets.length == 0) {
                 delete usersOnline[socket.token]
@@ -317,42 +296,62 @@ io.on('connection', async (socket) => {
 
     socket.on('resign', (callback) => {
         const room = usersOnline[socket.token].room;
-        const endGameState = checkersLogic.resignGame(usersOnline[socket.token],room)
+        const endGameState = checkersLogic.resignGame(usersOnline[socket.token], room)
+        let sent = []
         io.of('/').in(room).clients((err, idsRes) => {
             idsRes.forEach(id => {
-                // if (usersOnline[socket.token].sockets.includes(id))
-                //     return //continue next foreach element
-                io.to(id).emit('endGameUpdate',endGameState)
+                let send = true
+                sent.forEach(sentId => {
+                    Object.values(usersOnline).forEach(user => {
+                        if (user.sockets.includes(sentId))
+                            send = false
+                    })
+                })
+                if (send) {
+                    io.to(id).emit('endGameUpdate', endGameState)
+                    sent.push(id)
+                }
             })
             callback(endGameState)
         })
     })
- //  add emit dataUpdate => make cside to emit endgame status
+
     socket.on('resToDraw', (res) => {
         const room = usersOnline[socket.token].room;
-        const endGameState = checkersLogic.updateResToDraw(usersOnline[socket.token],room,res)
+        const endGameState = checkersLogic.updateResToDraw(room, res)
+        let sent = []
         io.of('/').in(room).clients((err, idsRes) => {
             idsRes.forEach(id => {
-                // if (usersOnline[socket.token].sockets.includes(id))
-                //     return //continue next foreach element
-                io.to(id).emit('opponentDrawRes', (res,endGameState))
+                let send = true
+                sent.forEach(sentId => {
+                    Object.values(usersOnline).forEach(user => {
+                        if (user.sockets.includes(sentId) && user.sockets.includes(id)) {///////////////////////not working && !user.sockets[0] == id) {
+                            send = false
+                            console.log("Block: " + id);
+                        }
+                    })
+                })
+
+                if (send) {
+                    io.to(id).emit('opponentDrawRes', endGameState)
+                    console.log("Send: " + id);
+
+                    sent.push(id)
+                }
             })
         })
     })
 
     socket.on('leaveGame', (callback) => {
         const room = usersOnline[socket.token].room;
-        //const endGameState = checkersLogic.getEndGameState(room) //updateResToDraw(usersOnline[socket.token],room,res)
         handleSocketLeaveOrDisconnect(socket)
-        callback()//callback(endGameState)
+        callback()
     })
 
     socket.on('disconnect', () => {
         handleSocketLeaveOrDisconnect(socket)
     })
 })
-
-
 
 server.listen(port, () => {
     console.log('server start listening on port 3000!');

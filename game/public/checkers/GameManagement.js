@@ -1,6 +1,7 @@
 "use strict";
 const socket = io()
 
+
 class GameManagement {
     constructor() {
         this.boardManagement = new BoardManagement();
@@ -127,27 +128,22 @@ class GameManagement {
 
 const offerDraw = () => {
     if (confirm("Are u sure u want to offer draw???"))
-        socket.emit("offerDraw", () => {//(endGameState) => {
-            //  handleEndGame(endGameState)
-        })
+        socket.emit("offerDraw", () => { })
 }
 
 const finishGame = () => {
     socket.emit("leaveGame", () => {
-        // handleEndGame(endGameState)
+        let white = window.parent.document.getElementById('userColorWhite')
+        let black = window.parent.document.getElementById('userColorBlack')
+        white ? white.parentNode.removeChild(white) : "";
+        black ? black.parentNode.removeChild(black) : "";
         parent.removeIframe()
     })
 }
 
-
 const resignGame = () => {
     if (confirm("Are u sure u want to resign?????")) {
-        socket.emit("resign", (endGameState) => {
-            // if (error)
-            //     alert('error resigning!! error: ' + error)
-            // else
-            handleEndGame(endGameState)
-        })
+        socket.emit("resign", (endGameState) => { handleEndGame(endGameState) })
     }
 }
 
@@ -158,22 +154,20 @@ const leaveRoom = () => {
 
 const handleEndGame = (endGameState) => {
     let isBlack = false
-    if (window.parent.document.getElementById('black'))
+    if (window.parent.document.getElementById('userColorBlack'))
         isBlack = true
 
-    // if (endGameState.userLeft)
-    //     finishGame()
-    else if (endGameState.opponentLeft) {
-        alert("Unfortunately your opponents left the room :(")
-        finishGame()
-    }
-    else if (endGameState.resign) {
+    if (endGameState.resign) {
         if (endGameState.isBlack != isBlack)
             alert("Congrat! ur opponent is a pussy!! Resign is 4 the weak! You win!!!")
         else
             alert("Pussy! u lost!")
         finishGame()
-    } else if (endGameState.win) {
+    } else if (endGameState.left && !endGameState.resign) {
+        alert("Unfortunately your opponents left the room :(")
+        finishGame()
+    }
+    else if (endGameState.win) {
         alert(endGameState.isBlack ? "Black WON!!" : "Red WON!!!");
         finishGame()
     } else if (endGameState.isDraw) {
@@ -187,27 +181,17 @@ socket.on('endGameUpdate', (endGameState) => {
 })
 
 socket.on('opponentAsk4Draw', (callback) => {
-    console.log("opponentAsk4Draw " + socket.id)
     if (confirm("Your opponents ask for draw!! confirm???"))
-        socket.emit('resToDraw', true)//callback(true)
+        socket.emit('resToDraw', true)
     else
         socket.emit('resToDraw', false)
 })
 
-socket.on('opponentDrawRes', (isDrawAccepted, endGameState) => {
-    if (isDrawAccepted)
+socket.on('opponentDrawRes', (endGameState) => {
+    if (endGameState.isDraw)
         handleEndGame(endGameState)
     else
         alert("Unfortunately your opponets don't give a shit about u and decline your offer to draw...")
-})
-
-socket.on('opponentLeft', () => {
-    console.log("opponent left");
-    handleEndGame({ win: false, isDraw: false, isWhite: false, opponentLeft: true })
-})
-
-socket.on('opponentResign', () => {
-    handleEndGame({ win: true, isDraw: false, isWhite: undefined, opponentResign: true })
 })
 
 socket.on('error', (errorMsg) => {

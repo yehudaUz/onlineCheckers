@@ -102,19 +102,34 @@ class CheckersLogic {
         return this.gamesStatus[index].legalMoveState;
     }
 
+
+
     resignGame(user, index) {
         this.gamesStatus[index].endGamestate.isBlack = !user.isWhite
         this.gamesStatus[index].endGamestate.resign = true
         return this.gamesStatus[index].endGamestate
     }
 
-    updateResToDraw(user, index, res) {
+    updateResToDraw(index, res) {
         if (res)
             this.gamesStatus[index].endGamestate.isDraw = true
         else
             this.gamesStatus[index].endGamestate.isDrawRefused = true
         return this.gamesStatus[index].endGamestate
     }
+
+    updateLeaveRoom(user, index) {
+        if (!this.gamesStatus[index])
+            return undefined
+        if (!this.gamesStatus[index].endGamestate.isDraw && !this.gamesStatus[index].endGamestate.win &&
+            !this.gamesStatus[index].endGamestate.resign) {
+            this.gamesStatus[index].endGamestate.left = true
+            this.gamesStatus[index].endGamestate.isBlack = !user.isWhite
+        }
+        return this.gamesStatus[index].endGamestate
+    }
+
+
 
     isMoveTotalLegal(from, to, index, user) {
         let legalMoveState = this.isMoveLegal({ from, to }, index, user);
@@ -167,6 +182,7 @@ class CheckersLogic {
         if (this.isDraw(this.gamesStatus[index]))
             return this.gamesStatus[index].endGamestate;
         this.isWin(this.gamesStatus[index], index);
+        this.gamesStatus[index].endGamestate.win = true//////////////////////////////////////////
         return this.gamesStatus[index].endGamestate;
     }
 

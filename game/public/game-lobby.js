@@ -100,9 +100,9 @@ socket.on('startGame', ({ isWhite, names, id }) => {
         if (isWhite) {
             panel.after(nameTitle)
             game.prepend(nameTitle2)
-            userColor.id = "white"
+            userColor.id = "userColorWhite"
         } else {
-            userColor.id = "black"
+            userColor.id = "userColorBlack"
             panel.after(nameTitle2)
             game.prepend(nameTitle)
         }

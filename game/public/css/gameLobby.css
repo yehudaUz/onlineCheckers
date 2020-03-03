@@ -7,6 +7,14 @@
     padding: 24px;
 } */
 
+body {
+    background: url("/imgs/background2.jpg");
+    margin: 0px;
+    font-family: 'Ubuntu', sans-serif;
+    background-size: 100% 110%;
+    
+}
+
 .list-title {
     font-weight: 500;
     font-size: 18px;
@@ -28,8 +36,8 @@
     overflow-y: scroll
 }
 
-h2 {
-    border-bottom: 2px solid #000;
+h1 {
+    border-bottom: 10px solid #000;
     text-align: center;
 }
 
