@@ -4,12 +4,6 @@ const socket = io();
 const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 
 socket.on("usersUpdate", (users, error) => {
-    console.log(socket.id);
-    console.log(JSON.stringify(users));
-
-    if (error)
-        return console.log("User update error: " + error);
-
     const html = Mustache.render(sidebarTemplate, {
         users
     })
@@ -40,7 +34,6 @@ socket.on('msg', (msg) => {
 })
 
 socket.on('ReqToStartGameWith', (fromUser, isPlayerVsHimself) => {
-    console.log("ReqToStartGameWith: " + JSON.stringify(fromUser));
     if (isPlayerVsHimself) {
         const res = confirm('Hi! Are u sure u want to play against yourself??? your rank will not be upadted. ')
         socket.emit('resToGameInvite', { fromUser, res })
@@ -52,39 +45,25 @@ socket.on('ReqToStartGameWith', (fromUser, isPlayerVsHimself) => {
 })
 
 socket.on('reqCanceld', (userName) => {
-    console.log(socket.id);
-
     alert("Unfortunately " + userName + " is decline your offer to play :(\nTry with another user :)")
 })
 
 let isUserColorblack
 socket.on('startGame', ({ isBlack, names, id }) => {
     isUserColorblack = isBlack
-    console.log("start game");
-    console.log(socket.id);
-
-    // suka++
-    // if (suka > 1)
-    //     return
 
     let iframe = document.createElement('iframe');
-    // iframe.setAttribute('src', "https://quiet-shore-40615.herokuapp.com/checkers/index.html");
-    iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
+    iframe.setAttribute('src', "https://quiet-shore-40615.herokuapp.com/checkers/index.html");
+    // iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
     document.getElementById("gameDiv").appendChild(iframe)
     iframe.className = 'embeddedPage'
 
-    // let socketID = document.createElement("div")
-    // socketID.id = id
-    // socketID.className = "socketID"
     const userColor = document.createElement('div')
-
-
     window.parent.document.getElementById('gameDiv').appendChild(userColor)// socketID)
 
-    iframe.onload = function () {  // before setting 'src'
+    iframe.onload = function () {  
         let page = document.getElementsByClassName("embeddedPage");
-        let htmlDocument = page[0].contentWindow ? page[0].contentWindow.document : page[0].contentDocument //page.contentDocument || page.contentWindow.document//page.contentDocument;
-
+        let htmlDocument = page[0].contentWindow ? page[0].contentWindow.document : page[0].contentDocument
 
         const nameTitle = htmlDocument.createElement('h3')
         nameTitle.innerText = names[0]
@@ -93,7 +72,6 @@ socket.on('startGame', ({ isBlack, names, id }) => {
         const nameTitle2 = htmlDocument.createElement('h3')
         nameTitle2.innerText = names[1]
         nameTitle2.style.textAlign = 'left'
-        //afteer panel and game
 
         const panel = htmlDocument.getElementById("panel")
         const game = htmlDocument.getElementById("game")
@@ -119,7 +97,6 @@ const login = () => {
     socket.emit('login', () => {
     })
 }
-
 
 login()
 

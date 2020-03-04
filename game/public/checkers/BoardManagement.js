@@ -1,5 +1,4 @@
 "use strict";
-//const CheckersPiece = require('./CheckersPiece')
 const initialBoard = [
     0, 1, 0, 1, 0, 1, 0, 1,
     1, 0, 1, 0, 1, 0, 1, 0,
@@ -44,7 +43,7 @@ class BoardManagement {
     }
 
     makeMove(from, to, legalMoveState) {
-        this.symbolicBoard[to.y][to.x] = this.symbolicBoard[from.y][from.x]; //normal move
+        this.symbolicBoard[to.y][to.x] = this.symbolicBoard[from.y][from.x]; 
         this.symbolicBoard[from.y][from.x] = null;
         this.deleteEatenPieces(legalMoveState);
     }
@@ -69,5 +68,3 @@ class BoardManagement {
         return this.symbolicBoard;
     }
 }
-
-//module.exports = BoardManagement

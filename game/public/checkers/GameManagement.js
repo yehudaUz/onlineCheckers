@@ -1,7 +1,6 @@
 "use strict";
 const socket = io()
 
-
 class GameManagement {
     constructor() {
         this.boardManagement = new BoardManagement();
@@ -95,14 +94,7 @@ class GameManagement {
         let currentImg, cureentDiv, mouseDown = false;
         addEventsToNewPics();
         addEventsToButtons();
-        let board = this.boardManagement.getBoard()
-        socket.emit('gameConfigured', { board }, (error) => {
-            if (error) {
-                alert(error)
-                location.href = '/'
-            }
-        })
-
+        socket.emit('done')
 
         socket.on('opponentMove', ({ from, to, legalMoveState }) => {
             this.boardManagement.makeMove(from, to, legalMoveState);
@@ -112,6 +104,7 @@ class GameManagement {
             this.graphics.renderPieces();
             addEventsToNewPics();
         })
+        
     }
 }
 
@@ -177,10 +170,8 @@ socket.on('opponentAsk4Draw', (callback) => {
         socket.emit('resToDraw', false)
 })
 
-socket.on('opponentDrawRes', (endGameState) => {
-    if (endGameState.isDraw)
-        handleEndGame(endGameState)
-    else
+socket.on('opponentRefuseDraw', (endGameState) => {
+    if (!endGameState.isDraw)
         alert("Unfortunately your opponets don't give a shit about u and decline your offer to draw...")
 })
 

@@ -59,22 +59,10 @@ class CheckersLogic {
                 this.gamesStatus[index].legalMoveState.message.push("Wrong direction!");
                 return this.gamesStatus[index].legalMoveState;
             } else if (Math.abs(to.y - from.y) == 2 && Math.abs(to.x - from.x) == 2) { //check if eat
-                let x = 0,
-                    y = 0;
+
                 let direction = this.getMoveDirection(from, to);
-                if (direction.rightDown) {
-                    x = parseInt(to.x) - 1;
-                    y = parseInt(to.y) - 1;
-                } else if (direction.isLeftDown) {
-                    x = parseInt(to.x) + 1;
-                    y = parseInt(to.y) - 1;
-                } else if (direction.isLeftUp) {
-                    x = parseInt(to.x) + 1;
-                    y = parseInt(to.y) + 1;
-                } else if (direction.rightUp) {
-                    x = parseInt(to.x) - 1;
-                    y = parseInt(to.y) + 1;
-                }
+                let { x, y } = this.setXYByDirection(direction, to)
+
                 if (this.gamesStatus[index].board[y][x] == null || this.gamesStatus[index].board[y][x].isBlack == this.gamesStatus[index].isBlackTurn) {
                     this.gamesStatus[index].legalMoveState.message.push("didn't eat!");
                     return this.gamesStatus[index].legalMoveState;
@@ -100,6 +88,24 @@ class CheckersLogic {
         return this.gamesStatus[index].legalMoveState;
     }
 
+
+    setXYByDirection(direction, to) {
+        let x, y
+        if (direction.rightDown) {
+            x = parseInt(to.x) - 1;
+            y = parseInt(to.y) - 1;
+        } else if (direction.isLeftDown) {
+            x = parseInt(to.x) + 1;
+            y = parseInt(to.y) - 1;
+        } else if (direction.isLeftUp) {
+            x = parseInt(to.x) + 1;
+            y = parseInt(to.y) + 1;
+        } else if (direction.rightUp) {
+            x = parseInt(to.x) - 1;
+            y = parseInt(to.y) + 1;
+        }
+        return { x, y }
+    }
 
 
     resignGame(user, index) {
@@ -132,7 +138,6 @@ class CheckersLogic {
     isMoveTotalLegal(from, to, index, user) {
         let legalMoveState = this.isMoveLegal({ from, to }, index, user);
         let mustEatState = this.getPlayerMustEatState(index);
-        console.log("mustEatState.move: " + JSON.stringify(mustEatState.move));
 
         if (!mustEatState.is ||
             (mustEatState.is && ((mustEatState.move).filter(pos => (pos.fromX == from.x &&
@@ -141,8 +146,7 @@ class CheckersLogic {
                 (legalMoveState.inMiddleSequence.is && from.x == legalMoveState.inMiddleSequence.from.x &&
                     from.y == legalMoveState.inMiddleSequence.from.y))) {
                 legalMoveState.is = true;
-                //update 15 moves
-                this.updateFifteenMoves(this.gamesStatus[index], from);
+                this.updateFifteenMoves(this.gamesStatus[index], from);                 //update 15 moves
                 return legalMoveState
             }
         if ((mustEatState.is && !(mustEatState.move).filter(pos => (pos.fromX == from.x &&
@@ -153,7 +157,6 @@ class CheckersLogic {
         legalMoveState.is = false;
         return legalMoveState;
     }
-
 
     condition(start, end, step) {
         if (step < 0)
@@ -180,10 +183,9 @@ class CheckersLogic {
         if (this.isDraw(this.gamesStatus[index]))
             return this.gamesStatus[index].endGamestate;
         this.isWin(this.gamesStatus[index], index);
-        this.gamesStatus[index].endGamestate.isWin = true//////////////////////////////////////////
+         this.gamesStatus[index].endGamestate.isWin = true////////////////////////////////////////////////////////////////////////////
         return this.gamesStatus[index].endGamestate;
     }
-
 
     isPlayerCanEatMore(from, index) {
         for (let k = 0; k < this.gamesStatus[index].board.length; k++) {
@@ -232,7 +234,8 @@ class CheckersLogic {
             return { is: true, move: eatFromArr };
         return { is: false, move: eatFromArr };
     }
-    checkAndUpadateMiddleSequenceState(legalMoveState, to, index) {//////////////////////////////////////////
+
+    checkAndUpadateMiddleSequenceState(legalMoveState, to, index) {
         if (legalMoveState.arrOfPiecesToDelete.length > 0)
             legalMoveState.inMiddleSequence = this.isPlayerCanEatMore(to, index);
         else {
@@ -270,7 +273,6 @@ class CheckersLogic {
             ths.endGamestate.isDraw = true
         return ths.endGamestate.isDraw;
     }
-
 
     isWin(ths, index) {
         if (this.isNoPiecesisLeft(ths))

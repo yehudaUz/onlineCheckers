@@ -37,7 +37,7 @@ class Graphics {
             gameBoardDiv.appendChild(document.createElement("br"));
             for (let l = 0; l < this.symbolicBoard.length; l++) {
                 this.divsBoard[k][l] = document.createElement("div");
-                isBlack = l != 0 ? !isBlack : isBlack; ////////! can move
+                isBlack = l != 0 ? !isBlack : isBlack; 
                 this.divsBoard[k][l].classList = isBlack ? "black" : "white";
                 this.divsBoard[k][l].setAttribute("x", l);
                 this.divsBoard[k][l].setAttribute("y", k);

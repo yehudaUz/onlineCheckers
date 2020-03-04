@@ -92,7 +92,7 @@ userSchema.statics.updateRank = function (userToken, opponentToken, endGameState
 
         if (endGameState.isDraw) {
             let newUser = await User.findOneAndUpdate({ 'tokens.token': userToken }, { rating: user.rating + 3 }, { new: true })
-            let newOpponent = User.findOneAndUpdate({ 'tokens.token': opponentToken }, { rating: opponent.rating + 3 }, { new: true })
+            let newOpponent = await User.findOneAndUpdate({ 'tokens.token': opponentToken }, { rating: opponent.rating + 3 }, { new: true })
             resolve({ userRating: newUser.rating, opponentRating: newOpponent.rating })
         }
         else {

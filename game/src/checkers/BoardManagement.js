@@ -14,7 +14,7 @@ const initialBoard = [
 class BoardManagement {
 
     constructor() {
-    //    board = this.setSymbolicBoard(initialBoard);
+        this.board = this.setBoard(initialBoard);
     }
 
     setBoardSize(arr) {
@@ -30,26 +30,26 @@ class BoardManagement {
         return newArr;
     }
 
-    // setSymbolicBoard(initialBoard) {
-    //     let sb = this.setBoardSize(initialBoard);
-    //     for (let k = 0; k < sb.length; k++) {
-    //         for (let l = 0; l < sb.length; l++) {
-    //             sb[k][l] = (initialBoard[l + k * sb.length] == 1) ? new CheckersPiece(true, false) : sb[k][l];
-    //             sb[k][l] = (initialBoard[l + k * sb.length] == 2) ? new CheckersPiece(false, false) : sb[k][l];
-    //             sb[k][l] = (initialBoard[l + k * sb.length] == 3) ? new CheckersPiece(true, true) : sb[k][l];
-    //             sb[k][l] = (initialBoard[l + k * sb.length] == 4) ? new CheckersPiece(false, true) : sb[k][l];
-    //         }
-    //     }
-    //     return sb;
-    // }
-
-    makeMove(from, to, legalMoveState,board) {
-        board[to.y][to.x] = board[from.y][from.x]; //normal move
-        board[from.y][from.x] = null;
-        this.deleteEatenPieces(legalMoveState,board);
+    setBoard(initialBoard) {
+        let sb = this.setBoardSize(initialBoard);
+        for (let k = 0; k < sb.length; k++) {
+            for (let l = 0; l < sb.length; l++) {
+                sb[k][l] = (initialBoard[l + k * sb.length] == 0) ? null : sb[k][l];
+                sb[k][l] = (initialBoard[l + k * sb.length] == 1) ? { isBlack: true, isKing: false } : sb[k][l];
+                sb[k][l] = (initialBoard[l + k * sb.length] == 2) ? { isBlack: false, isKing: false } : sb[k][l];
+                //sb[k][l] = (initialBoard[l + k * sb.length] == 4) ? new CheckersPiece(false, true) : sb[k][l];
+            }
+        }
+        return sb;
     }
 
-    updateKingsIfNecessary(to,board) {
+    makeMove(from, to, legalMoveState, board) {
+        board[to.y][to.x] = board[from.y][from.x]; //normal move
+        board[from.y][from.x] = null;
+        this.deleteEatenPieces(legalMoveState, board);
+    }
+
+    updateKingsIfNecessary(to, board) {
         if (to.y == board.length - 1 && board[to.y][to.x].isBlack && !board[to.y][to.x].isKing) {
             board[to.y][to.x] = new CheckersPiece(board[to.y][to.x].isBlack, true);
         } else if (to.y == 0 && !board[to.y][to.x].isBlack && !board[to.y][to.x].isKing) {
@@ -57,7 +57,7 @@ class BoardManagement {
         }
     }
 
-    deleteEatenPieces(legalMoveState,board) {
+    deleteEatenPieces(legalMoveState, board) {
         if (legalMoveState.arrOfPiecesToDelete.length > 0)
             for (let k = 0; k < legalMoveState.arrOfPiecesToDelete.length; k++) {
                 let pos = legalMoveState.arrOfPiecesToDelete[k];
@@ -66,7 +66,7 @@ class BoardManagement {
     }
 
     getBoard() {
-        return board;
+        return this.board;
     }
 }
 
