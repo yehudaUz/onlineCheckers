@@ -73,10 +73,6 @@ class GameManagement {
                             this.graphics.renderMessages(legalMoveState.message);
                             this.graphics.renderPieces();
                             addEventsToNewPics();
-
-                            socket.emit('getEndGameState', false, (endGameState) => {
-                                handleEndGame(endGameState);
-                            })
                         }
                         else
                             this.graphics.renderMessages(legalMoveState.message);
@@ -84,9 +80,6 @@ class GameManagement {
                 }
                 this.graphics.renderPieces();
                 addEventsToNewPics();
-                // socket.emit('getEndGameState', id, (endGameState) => {
-                //     handleEndGame(endGameState);
-                // })
             });
         }
 
@@ -118,9 +111,6 @@ class GameManagement {
             this.graphics.renderMessages(legalMoveState.message);
             this.graphics.renderPieces();
             addEventsToNewPics();
-            socket.emit('getEndGameState', true, (endGameState) => {
-                handleEndGame(endGameState);
-            })
         })
     }
 }
@@ -157,17 +147,17 @@ const handleEndGame = (endGameState) => {
     if (window.parent.document.getElementById('userColorBlack'))
         isBlack = true
 
-    if (endGameState.resign) {
+    if (endGameState.isResign) {
         if (endGameState.isBlack != isBlack)
             alert("Congrat! ur opponent is a pussy!! Resign is 4 the weak! You win!!!")
         else
             alert("Pussy! u lost!")
         finishGame()
-    } else if (endGameState.left && !endGameState.resign) {
+    } else if (endGameState.isLeft && !endGameState.isResign) {
         alert("Unfortunately your opponents left the room :(")
         finishGame()
     }
-    else if (endGameState.win) {
+    else if (endGameState.isWin) {
         alert(endGameState.isBlack ? "Black WON!!" : "Red WON!!!");
         finishGame()
     } else if (endGameState.isDraw) {

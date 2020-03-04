@@ -102,9 +102,9 @@ io.on('connection', async (socket) => {
         const userIn = findInUsersOnlineByName(user.name)
         if (userIn && !userIn.sockets.includes(socket.id)) {
             console.log("Before: " + JSON.stringify());
-            
+
             //user.tokens.pop()
-            let newUser = await User.findOneAndUpdate({ 'tokens.token': token }, { tokens: [user.tokens[user.tokens.length-2]] }, { new: true })
+            let newUser = await User.findOneAndUpdate({ 'tokens.token': token }, { tokens: [user.tokens[user.tokens.length - 2]] }, { new: true })
             //const delStatus = User.findOneAndDelete()
             delete user.tokens[user.tokens.findIndex(tok => tok.token == socket.token)]
             socket.emit('msg', 'Already logged in!')
@@ -118,7 +118,7 @@ io.on('connection', async (socket) => {
                     sockets: [socket.id],
                     token,
                     room: undefined,
-                    isWhite: undefined,
+                    isBlack: undefined,
                     isVsHimself: false
                 }
                 usersOnline[token] = userData
@@ -135,35 +135,30 @@ io.on('connection', async (socket) => {
             }
         }
     }
-    socket.on('getEndGameState', (isOpponentMove, callback) => {
-        const room = usersOnline[socket.token].room
-        const endGameState = checkersLogic.getEndGameState(room) //{ win: true, isWhite: true, isDraw: false }
-        if (endGameState.win || endGameState.isDraw) {
-            if (!isOpponentMove) {
-                io.of('/').in(room).clients((err, idsRes) => {
-                    if (idsRes.length > 2) { //player against himself not getting ranks
-                        const user = usersOnline[socket.token]
-                        const oppToken = rooms.find(room => room.roomNumber == room.roomNumber).user1
-                        User.updateRank(socket.token, oppToken, endGameState, user.isWhite).then((res, rej) => {
-                            usersOnline[socket.token].rank = res.userRating
-                            usersOnline[oppToken].rank = res.opponentRating
-                        })
-                    }
-                });
-            }
-            socket.leave(room, () => {})
+
+    const updateRanksAndReqControl = (socket, endGameState, update) => {
+        const room = usersOnline[socket.token].room;
+        if (checkersLogic.gamesStatus[room].isFinished)
+            return
+        checkersLogic.gamesStatus[room].isFinished = true              dkjfghsdkjghkjdsfghklsdjfghjkhaklsdjhgakjsdgh./;
+        io.of('/').in(room).clients((err, idsRes) => {
+            //if (idsRes.length > 2) { //player against himself not getting ranks
+            const user = usersOnline[socket.token]
+            const oppToken = rooms.find(room => room.roomNumber == room.roomNumber).user1
+            User.updateRank(socket.token, oppToken, endGameState, user.isBlack).then((res, rej) => {
+                usersOnline[socket.token].rank = res.userRating
+                usersOnline[oppToken].rank = res.opponentRating
+            })
+            //  }
             if (reqControl.get(socket.token))
                 reqControl.delete(socket.token)
-            io.emit('usersUpdate', getPublicUserData())
-            callback(endGameState)
-        } else
-            callback(endGameState)
-    })
+            update()
+        })
+        // socket.leave(room, () => { })
 
-    socket.on('isMoveTotalLegal', ({
-        from,
-        to
-    }, callback) => {
+    }
+
+    socket.on('isMoveTotalLegal', ({ from, to }, callback) => {
         console.log(usersOnline);
         const room = usersOnline[socket.token].room;
         const legalMoveState = checkersLogic.isMoveTotalLegal(from, to, room, usersOnline[socket.token])
@@ -176,17 +171,14 @@ io.on('connection', async (socket) => {
             if (!legalMoveState.inMiddleSequence.is)
                 boardManagement.updateKingsIfNecessary(to, checkersLogic.getBoardByIndex(room));
 
-            socket.broadcast.to(room).emit('opponentMove', {
-                from,
-                to,
-                legalMoveState
-            })
-            io.of('/').in(room).clients((err, res) => {
+            socket.broadcast.to(room).emit('opponentMove', { from, to, legalMoveState })
 
-                console.log(socket.id + " Send to other people in in room: " + room + "\n" +
-                    "Peolple in room: " + res);
-            })
-
+            const endGameState = checkersLogic.getEndGameState(room)
+            // endGameState.isWin = true
+            if (endGameState.isWin || endGameState.isDraw)
+                updateRanksAndReqControl(socket, endGameState, () => {
+                    io.in(room).emit('endGameUpdate', endGameState);
+                })
         }
         callback(legalMoveState)
     })
@@ -235,40 +227,26 @@ io.on('connection', async (socket) => {
         }
     })
 
-    socket.on('resToGameInvite', ({
-        fromUser,
-        res
-    }) => {
+    socket.on('resToGameInvite', ({ fromUser, res }) => {
         let from = findInUsersOnlineByName(fromUser.username)
         const to = usersOnline[socket.token]
 
         if (res) {
             from.room = roomNumber, to.room = roomNumber
-            rooms.push({
-                roomNumber,
-                user1: socket.token,
-                user2: from.token
-            })
-            from.sockets.forEach(suka => {
-                io.sockets.connected[suka].join(roomNumber)
-            })
+            rooms.push({ roomNumber, user1: socket.token, user2: from.token })
+            from.sockets.forEach(suka => { io.sockets.connected[suka].join(roomNumber) })
             from.sockets.forEach(suka2 => io.to(suka2).emit('startGame', {
-                isWhite: true,
-                names: [from.username, to.username],
-                id: suka2
+                isBlack: false, names: [from.username, to.username], id: suka2
             }))
-            from.isWhite = true
+            from.isBlack = false
             to.sockets.forEach(suka3 => {
                 if (!from.sockets.includes(suka3)) { //not send twice for 1 player against himself
                     io.to(suka3).emit('startGame', {
-                        isWhite: false,
-                        names: [to.username, from.username],
-                        id: suka3
+                        isBlack: true, names: [to.username, from.username], id: suka3
                     })
-                    to.isWhite = false
-                } else {
+                    to.isBlack = true
+                } else
                     from.isVsHimself = true
-                }
             })
             roomNumber++;
         } else
@@ -276,9 +254,7 @@ io.on('connection', async (socket) => {
     })
 
 
-    socket.on('gameConfigured', ({
-        board
-    }) => {
+    socket.on('gameConfigured', ({ board }) => {
         checkersLogic.setNewRoom(usersOnline[socket.token].room)
 
         io.of('/').in(usersOnline[socket.token].room).clients((err, res) => {
@@ -343,66 +319,42 @@ io.on('connection', async (socket) => {
 
     socket.on('offerDraw', (callback) => {
         const room = usersOnline[socket.token].room;
-        io.of('/').in(room).clients((err, idsRes) => {
-            if (idsRes != null)
-                idsRes.forEach(id => {
-                    if (usersOnline[socket.token].sockets.includes(id))
-                        return //continue next foreach element
-                    io.to(id).emit('opponentAsk4Draw')
-                })
+        const idArr = io.sockets.adapter.rooms[room].sockets;
+        Object.keys(idArr).filter(id => !usersOnline[socket.token].sockets.includes(id)).forEach(idToSend => {
+            io.to(idToSend).emit('opponentAsk4Draw')
         })
     })
 
     socket.on('resign', (callback) => {
         const room = usersOnline[socket.token].room;
         const endGameState = checkersLogic.resignGame(usersOnline[socket.token], room)
-        let sent = []
-        io.of('/').in(room).clients((err, idsRes) => {
-            idsRes.forEach(id => {
-                let send = true
-                sent.forEach(sentId => {
-                    Object.values(usersOnline).forEach(user => {
-                        if (user.sockets.includes(sentId))
-                            send = false
-                    })
-                })
-                if (send) {
-                    io.to(id).emit('endGameUpdate', endGameState)
-                    sent.push(id)
-                }
-            })
-            callback(endGameState)
+        updateRanksAndReqControl(socket, endGameState, () => {
+            io.in(room).emit('endGameUpdate', endGameState);
         })
     })
 
     socket.on('resToDraw', (res) => {
         const room = usersOnline[socket.token].room;
         const endGameState = checkersLogic.updateResToDraw(room, res)
-        let sent = []
-        io.of('/').in(room).clients((err, idsRes) => {
-            idsRes.forEach(id => {
-                let send = true
-                sent.forEach(sentId => {
-                    Object.values(usersOnline).forEach(user => {
-                        if (user.sockets.includes(sentId) && user.sockets.includes(id)) { ///////////////////////not working && !user.sockets[0] == id) {
-                            send = false
-                            console.log("Block: " + id);
-                        }
-                    })
-                })
-
-                if (send) {
-                    io.to(id).emit('opponentDrawRes', endGameState)
-                    console.log("Send: " + id);
-
-                    sent.push(id)
-                }
+        if (res) {
+            updateRanksAndReqControl(socket, endGameState, () => {
+                socket.emit('endGameUpdate', endGameState);
             })
-        })
+            const opponentId = Object.keys(io.sockets.adapter.rooms[room].sockets).find(id => !usersOnline[socket.token].sockets.includes(id))
+            const opponentSocket = io.sockets.connected[opponentId]
+            updateRanksAndReqControl(opponentSocket, endGameState, () => {   askjdhfkasjfh MSMediaKeyMessageEvent.gas./dgsda./glk
+                opponentSocket.emit('endGameUpdate', endGameState);
+            })
+        }
+        else {
+            const idArr = io.sockets.adapter.rooms[room].sockets;
+            Object.keys(idArr).filter(id => !usersOnline[socket.token].sockets.includes(id)).forEach(idToSend => {
+                io.to(idToSend).emit('opponentDrawRes', endGameState)
+            })
+        }
     })
 
     socket.on('leaveGame', (callback) => {
-        const room = usersOnline[socket.token].room;
         handleSocketLeaveOrDisconnect(socket)
         callback()
     })

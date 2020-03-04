@@ -20,7 +20,7 @@ class Graphics {
     }
     createAndRenderBoardAndPanel() {
         document.querySelector("body").style.visibility = "visible";
-        let isWhite = true;
+        let isBlack = false;
         let gameDiv = document.createElement("div"),
             gameBoardDiv = document.createElement("div"),
             panelDiv = new Panel();
@@ -37,8 +37,8 @@ class Graphics {
             gameBoardDiv.appendChild(document.createElement("br"));
             for (let l = 0; l < this.symbolicBoard.length; l++) {
                 this.divsBoard[k][l] = document.createElement("div");
-                isWhite = l != 0 ? !isWhite : isWhite;
-                this.divsBoard[k][l].classList = isWhite ? "white" : "black";
+                isBlack = l != 0 ? !isBlack : isBlack; ////////! can move
+                this.divsBoard[k][l].classList = isBlack ? "black" : "white";
                 this.divsBoard[k][l].setAttribute("x", l);
                 this.divsBoard[k][l].setAttribute("y", k);
                 gameBoardDiv.appendChild(this.divsBoard[k][l]);

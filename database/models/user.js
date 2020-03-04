@@ -85,7 +85,7 @@ userSchema.methods.generateAuthToken = async function () {
 }
 
 //win/loose is tenth of diff, draw is /25. min 1 point. max 25 points.
-userSchema.statics.updateRank = function (userToken, opponentToken, endGameState, isUserWhite) {
+userSchema.statics.updateRank = function (userToken, opponentToken, endGameState, isUserBlack) {
     return new Promise(async (resolve, reject) => {
         const user = await User.findOne({ 'tokens.token': userToken })
         const opponent = await User.findOne({ 'tokens.token': opponentToken })
@@ -96,9 +96,13 @@ userSchema.statics.updateRank = function (userToken, opponentToken, endGameState
             resolve({ userRating: newUser.rating, opponentRating: newOpponent.rating })
         }
         else {
-            if (endGameState.isWhite == isUserWhite) {
+            if (endGameState.isBlack == isUserBlack) {
                 let newUser = await User.findOneAndUpdate({ 'tokens.token': userToken }, { rating: user.rating + 10 }, { new: true })
-                let newOpponent = await User.findOneAndUpdate({ 'tokens.token': opponentToken }, { rating: opponent.rating - 10 }, { new: true })
+                let newOpponent;
+                if (user.rating >= 10)
+                    newOpponent = await User.findOneAndUpdate({ 'tokens.token': opponentToken }, { rating: opponent.rating - 10 }, { new: true })
+                else
+                    newOpponent = opponent
                 resolve({ userRating: newUser.rating, opponentRating: newOpponent.rating })
             }
             else {
@@ -113,7 +117,7 @@ userSchema.statics.updateRank = function (userToken, opponentToken, endGameState
             // let diff = userRank - opponentRank
             // let points = 0
             // user.rating = user.rating + 10
-            // if ((userRank -opponentRank > 0 && endGameState.isWhite == isUserWhite) ||
+            // if ((userRank -opponentRank > 0 && endGameState.isBlack == isUserBlack) ||
             //     () )
             //     points = (diff / 10 / Math.sqrt(diff))
             // else

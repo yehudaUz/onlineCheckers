@@ -13,7 +13,7 @@ class CheckersLogic {
             isBlackTurn: false,
             eaten: [],
             board,
-            endGamestate: { isDraw: false, win: false, isBlack: false, resign: false, left: false },
+            endGamestate: { isDraw: false, isWin: false, isBlack: false, isResign: false, isLeft: false, isFinished: false },
             fifteenKingsMoveCounter: 0,
             legalMoveState: {
                 legal: false,
@@ -43,7 +43,7 @@ class CheckersLogic {
             this.gamesStatus[index].legalMoveState.message.push("Not your turn!")
             return this.gamesStatus[index].legalMoveState;
         } else if (user && !user.isVsHimself &&
-            this.gamesStatus[index].board[from.y][from.x].isBlack == user.isWhite) {
+            this.gamesStatus[index].board[from.y][from.x].isBlack != user.isBlack) {
             this.gamesStatus[index].legalMoveState.message.push("Not your pieces!");
             return this.gamesStatus[index].legalMoveState;
         } else if (Math.abs(to.y - from.y) != Math.abs(to.x - from.x)) { //not diagonal
@@ -65,10 +65,10 @@ class CheckersLogic {
                 if (direction.rightDown) {
                     x = parseInt(to.x) - 1;
                     y = parseInt(to.y) - 1;
-                } else if (direction.leftDown) {
+                } else if (direction.isLeftDown) {
                     x = parseInt(to.x) + 1;
                     y = parseInt(to.y) - 1;
-                } else if (direction.leftUp) {
+                } else if (direction.isLeftUp) {
                     x = parseInt(to.x) + 1;
                     y = parseInt(to.y) + 1;
                 } else if (direction.rightUp) {
@@ -88,9 +88,9 @@ class CheckersLogic {
             let direction = this.getMoveDirection(from, to);
             if (direction.rightDown)
                 return this.isKingLegalMove(1, 1, from, to, this.gamesStatus[index].legalMoveState, index);
-            else if (direction.leftDown)
+            else if (direction.isLeftDown)
                 return this.isKingLegalMove(-1, 1, from, to, this.gamesStatus[index].legalMoveState, index);
-            else if (direction.leftUp)
+            else if (direction.isLeftUp)
                 return this.isKingLegalMove(-1, -1, from, to, this.gamesStatus[index].legalMoveState, index);
             else if (direction.rightUp)
                 return this.isKingLegalMove(1, -1, from, to, this.gamesStatus[index].legalMoveState, index);
@@ -103,8 +103,8 @@ class CheckersLogic {
 
 
     resignGame(user, index) {
-        this.gamesStatus[index].endGamestate.isBlack = !user.isWhite
-        this.gamesStatus[index].endGamestate.resign = true
+        this.gamesStatus[index].endGamestate.isBlack = user.isBlack
+        this.gamesStatus[index].endGamestate.isResign = true
         return this.gamesStatus[index].endGamestate
     }
 
@@ -119,10 +119,10 @@ class CheckersLogic {
     updateLeaveRoom(user, index) {
         if (!this.gamesStatus[index])
             return undefined
-        if (!this.gamesStatus[index].endGamestate.isDraw && !this.gamesStatus[index].endGamestate.win &&
-            !this.gamesStatus[index].endGamestate.resign) {
-            this.gamesStatus[index].endGamestate.left = true
-            this.gamesStatus[index].endGamestate.isBlack = !user.isWhite
+        if (!this.gamesStatus[index].endGamestate.isDraw && !this.gamesStatus[index].endGamestate.isWin &&
+            !this.gamesStatus[index].endGamestate.isResign) {
+            this.gamesStatus[index].endGamestate.isLeft = true
+            this.gamesStatus[index].endGamestate.isBlack = user.isBlack
         }
         return this.gamesStatus[index].endGamestate
     }
@@ -180,7 +180,7 @@ class CheckersLogic {
         if (this.isDraw(this.gamesStatus[index]))
             return this.gamesStatus[index].endGamestate;
         this.isWin(this.gamesStatus[index], index);
-        // this.gamesStatus[index].endGamestate.win = true//////////////////////////////////////////
+        this.gamesStatus[index].endGamestate.isWin = true//////////////////////////////////////////
         return this.gamesStatus[index].endGamestate;
     }
 
@@ -253,25 +253,27 @@ class CheckersLogic {
     }
 
     getMoveDirection(from, to) {
-        let diagonalDirction = { rightUp: false, rightDown: false, leftDown: false, leftUp: false };
+        let diagonalDirction = { rightUp: false, rightDown: false, isLeftDown: false, isLeftUp: false };
         if (to.y > from.y && to.x > from.x)
             diagonalDirction.rightDown = true;
         else if (to.y > from.y && to.x < from.x)
-            diagonalDirction.leftDown = true;
+            diagonalDirction.isLeftDown = true;
         else if (to.y < from.y && to.x < from.x)
-            diagonalDirction.leftUp = true;
+            diagonalDirction.isLeftUp = true;
         else if (to.y < from.y && to.x > from.x)
             diagonalDirction.rightUp = true;
         return diagonalDirction;
     }
 
     isDraw(ths) {
-        return ths.fifteenKingsMoveCounter >= 15;
+        if (ths.fifteenKingsMoveCounter >= 15)
+            ths.endGamestate.isDraw = true
+        return ths.endGamestate.isDraw;
     }
 
 
     isWin(ths, index) {
-        if (this.isNoPiecesleft(ths))
+        if (this.isNoPiecesisLeft(ths))
             return true;
         else if (this.playerPiecesAllBlocked(ths, index)) {
             return true;
@@ -294,12 +296,12 @@ class CheckersLogic {
                 }
             }
         }
-        ths.endGamestate.win = true;
+        ths.endGamestate.isWin = true;
         ths.endGamestate.isBlack = !ths.isBlackTurn;
         return true
     }
 
-    isNoPiecesleft(ths) {
+    isNoPiecesisLeft(ths) {
         let whiteHavePieces = false,
             blackHavePieces = false;
         for (let i = 0; i < ths.board.length; i++) {
@@ -314,7 +316,7 @@ class CheckersLogic {
                     return false;
             }
         }
-        ths.endGamestate.win = true;
+        ths.endGamestate.isWin = true;
         if (whiteHavePieces)
             ths.endGamestate.isBlack = false
         else

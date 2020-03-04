@@ -58,8 +58,8 @@ socket.on('reqCanceld', (userName) => {
 })
 
 let isUserColorblack
-socket.on('startGame', ({ isWhite, names, id }) => {
-    isUserColorblack = !isWhite
+socket.on('startGame', ({ isBlack, names, id }) => {
+    isUserColorblack = isBlack
     console.log("start game");
     console.log(socket.id);
 
@@ -98,7 +98,7 @@ socket.on('startGame', ({ isWhite, names, id }) => {
         const panel = htmlDocument.getElementById("panel")
         const game = htmlDocument.getElementById("game")
 
-        if (isWhite) {
+        if (!isBlack) {
             panel.after(nameTitle)
             game.prepend(nameTitle2)
             userColor.id = "userColorWhite"
