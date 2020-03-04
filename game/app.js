@@ -162,13 +162,13 @@ io.on('connection', async (socket) => {
         let to = findInUsersOnlineByName(userName);
         let request = reqControl.get(socket.token)
         if (request && request.to == to.token && (new Date() - request.time) / 1000 > 30)//30 sec pass
-            reqControl.delete(request)
+            reqControl.delete(socket.token)
 
         if (request && request.to == to.token) { //request sent or in game with player
             io.of('/').in(usersOnline[socket.token].room).clients((err, idsRes) => {
                 if (idsRes) {
                     if (!idsRes.includes(socket.id))
-                        return socket.emit('msg', "U alreObdy sent him request and he declined ur offer, to avoid abuse u can't send more req until u logout or he will.");
+                        return socket.emit('msg', "You already sent him request and he declined ur offer, please wait a little bit.");
                     else
                         return socket.emit('msg', "You r in the game with this player....");
                 }
