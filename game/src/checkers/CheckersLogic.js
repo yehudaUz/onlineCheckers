@@ -281,13 +281,13 @@ class CheckersLogic {
     isWin(ths, index) {
         if (this.isNoPiecesisLeft(ths))
             return true;
-        else if (this.playerPiecesAllBlocked(ths, index)) {
+        else if (this.isPlayerPiecesAllBlocked(ths, index)) {
             return true;
         }
         return false;
     }
 
-    playerPiecesAllBlocked(ths, index) {
+    isPlayerPiecesAllBlocked(ths, index) {
         for (let i = 0; i < ths.board.length; i++) {
             for (let j = 0; j < ths.board.length; j++) {
                 if (ths.board[i][j] != null && ths.board[i][j].isBlack == ths.isBlackTurn) {
