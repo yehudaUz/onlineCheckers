@@ -123,14 +123,18 @@ class CheckersLogic {
     }
 
     updateLeaveRoom(user, index) {
-        if (!this.gamesStatus[index])
+        try {
+            if (!this.gamesStatus[index])
+                return undefined
+            if (!this.gamesStatus[index].endGamestate.isDraw && !this.gamesStatus[index].endGamestate.isWin &&
+                !this.gamesStatus[index].endGamestate.isResign) {
+                this.gamesStatus[index].endGamestate.isLeft = true
+                this.gamesStatus[index].endGamestate.isBlack = user.isBlack
+            }
+            return this.gamesStatus[index].endGamestate
+        } catch (e) {
             return undefined
-        if (!this.gamesStatus[index].endGamestate.isDraw && !this.gamesStatus[index].endGamestate.isWin &&
-            !this.gamesStatus[index].endGamestate.isResign) {
-            this.gamesStatus[index].endGamestate.isLeft = true
-            this.gamesStatus[index].endGamestate.isBlack = user.isBlack
         }
-        return this.gamesStatus[index].endGamestate
     }
 
 
@@ -183,7 +187,7 @@ class CheckersLogic {
         if (this.isDraw(this.gamesStatus[index]))
             return this.gamesStatus[index].endGamestate;
         this.isWin(this.gamesStatus[index], index);
-    //     this.gamesStatus[index].endGamestate.isWin = true////////////////////////////////////////////////////////////////////////////
+        //     this.gamesStatus[index].endGamestate.isWin = true////////////////////////////////////////////////////////////////////////////
         return this.gamesStatus[index].endGamestate;
     }
 

@@ -76,11 +76,7 @@ io.on('connection', async (socket) => {
 
         const userIn = findInUsersOnlineByName(user.name)
         if (userIn && !userIn.sockets.includes(socket.id)) {
-            console.log("Before: " + JSON.stringify());
-
-            //user.tokens.pop()
             let newUser = await User.findOneAndUpdate({ 'tokens.token': token }, { tokens: [user.tokens[user.tokens.length - 2]] }, { new: true })
-            //const delStatus = User.findOneAndDelete()
             delete user.tokens[user.tokens.findIndex(tok => tok.token == socket.token)]
             socket.emit('msg', 'Already logged in!')
         } else {
@@ -88,18 +84,14 @@ io.on('connection', async (socket) => {
                 delete usersOnline[userIn.token]
             if (user) {
                 const userData = {
-                    username: user.name,
-                    rank: user.rating,
-                    sockets: [socket.id],
-                    token,
-                    room: undefined,
-                    isBlack: undefined,
+                    username: user.name, rank: user.rating,
+                    sockets: [socket.id], token,
+                    room: undefined, isBlack: undefined,
                     isVsHimself: false
                 }
                 usersOnline[token] = userData
                 io.emit('usersUpdate', Uti.getPublicUserData(usersOnline))
             }
-
         }
     })
 
@@ -143,12 +135,11 @@ io.on('connection', async (socket) => {
 
             if (!legalMoveState.inMiddleSequence.is)
                 boardManagement.updateKingsIfNecessary(to, checkersLogic.getBoardByIndex(room));
-            console.log("RRR: " +room);
-            
+
             socket.broadcast.to(room).emit('opponentMove', { from, to, legalMoveState })
 
             const endGameState = checkersLogic.getEndGameState(room)
-            // endGameState.isWin = true
+
             if (endGameState.isWin || endGameState.isDraw)
                 updateRanksAndReqControl(socket, endGameState, () => {
                     io.in(room).emit('endGameUpdate', endGameState);
@@ -174,7 +165,7 @@ io.on('connection', async (socket) => {
             io.of('/').in(usersOnline[socket.token].room).clients((err, idsRes) => {
                 if (idsRes) {
                     if (!idsRes.includes(socket.id))
-                        return socket.emit('msg', "U alredy sent him request and he declined ur offer, to avoid abuse u can't send more req until u logout or he will.");
+                        return socket.emit('msg', "U alreObdy sent him request and he declined ur offer, to avoid abuse u can't send more req until u logout or he will.");
                     else
                         return socket.emit('msg', "You r in the game with this player....");
                 }
@@ -196,7 +187,7 @@ io.on('connection', async (socket) => {
                 reqControl.set(socket.token, {
                     time: new Date(),
                     to: to.token
-                }) //add to request control avoid users annoy
+                }) 
             }
         }
     })
@@ -250,8 +241,8 @@ io.on('connection', async (socket) => {
                 })
                 if (reqControl.get(getTokenBySocketId(id)))
                     reqControl.delete(getTokenBySocketId(id))
-                if (socketInRoom.token == socket.token) 
-                    socketInRoom.leave(room)          
+                if (socketInRoom.token == socket.token)
+                    socketInRoom.leave(room)
             })
 
             const endGameState = checkersLogic.updateLeaveRoom(usersOnline[socket.token], room)
@@ -259,6 +250,14 @@ io.on('connection', async (socket) => {
                 if (endGameState)
                     io.to(id).emit('endGameUpdate', endGameState)
             })
+
+            for (const [userTok, user] of Object.entries(usersOnline)) {
+                user.sockets.forEach(socketId => {
+                    if (!Object.keys(io.sockets.connected).includes(socketId))
+                        if (usersOnline[userTok].sockets.indexOf(socketId) > -1)
+                            usersOnline[userTok].sockets.splice(usersOnline[userTok].sockets.indexOf(5), 1);
+                })
+            }
 
             if (usersOnline[socket.token] && usersOnline[socket.token].sockets.length == 0) {
                 delete usersOnline[socket.token]
