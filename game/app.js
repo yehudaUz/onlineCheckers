@@ -38,7 +38,6 @@ let boardManagement = new BoardManagement()
 
 let reqControl = new Map()
 let usersOnline = []
-let rooms = []
 let roomNumber = 0;
 
 
@@ -75,11 +74,11 @@ io.on('connection', async (socket) => {
         })
 
         const userIn = findInUsersOnlineByName(user.name)
-        if (userIn && !userIn.sockets.includes(socket.id)) {
-            let newUser = await User.findOneAndUpdate({ 'tokens.token': token }, { tokens: [user.tokens[user.tokens.length - 2]] }, { new: true })
+        if (userIn && !userIn.sockets.includes(socket.id)) { //simultaneously session isn't allowed 
+            await User.findOneAndUpdate({ 'tokens.token': token }, { tokens: [user.tokens[user.tokens.length - 2]] }, { new: true })
             delete user.tokens[user.tokens.findIndex(tok => tok.token == socket.token)]
             socket.emit('msg', 'Already logged in!')
-        } else {
+        } else { //user not in or not online, save new user to online users and update users
             if (userIn)
                 delete usersOnline[userIn.token]
             if (user) {
@@ -95,7 +94,6 @@ io.on('connection', async (socket) => {
                         users: Uti.getPublicUserData(usersOnline), userName: user.username
                     }
                     )))
-                //io.emit('usersUpdate', Uti.getPublicUserData(usersOnline))
             }
         }
     })
@@ -111,7 +109,7 @@ io.on('connection', async (socket) => {
     const updateRanksAndReqControl = (socket, endGameState, update) => {
         const room = usersOnline[socket.token].room;
         const user = usersOnline[socket.token]
-        if (checkersLogic.gamesStatus[room].isFinished)
+        if (checkersLogic.gamesStatus[room].isFinished) //avoid any attamp or hack to update ranks more then once
             return
         checkersLogic.gamesStatus[room].isFinished = true
         if (!user.isVsHimself) {             //player against himself not getting ranks
@@ -163,8 +161,8 @@ io.on('connection', async (socket) => {
     socket.on('sendReqToStartGameWith', (userName) => {
         let to = findInUsersOnlineByName(userName);
         let request = reqControl.get(socket.token)
-        // if (request && request.to == to.token && (new Date() - request.time) / 1000 > 30)//30 sec pass
-        //     reqControl.delete(request)
+        if (request && request.to == to.token && (new Date() - request.time) / 1000 > 30)//30 sec pass
+            reqControl.delete(request)
 
         if (request && request.to == to.token) { //request sent or in game with player
             io.of('/').in(usersOnline[socket.token].room).clients((err, idsRes) => {
@@ -175,16 +173,12 @@ io.on('connection', async (socket) => {
                         return socket.emit('msg', "You r in the game with this player....");
                 }
             })
-        } else if (typeof usersOnline[socket.token].room !== "undefined") { //if (Object.keys(socket.rooms).length > 1) {//socket itself in the middle of game
+        } else if (typeof usersOnline[socket.token].room !== "undefined")  //socket itself in the middle of game
             socket.emit('msg', 'You r in the middle of game.. please leave first!')
-        } else if (typeof to.room !== "undefined") { //the target socket in the middle of game
+        else if (typeof to.room !== "undefined")  //the target socket in the middle of game
             socket.emit('msg', 'Unfortunately ' + userName + " is in the middle of game.. please wait until he is done.")
-        } else { //send req to start new game            
-            const fromUser = {
-                username: usersOnline[socket.token].username,
-                rank: usersOnline[socket.token].rank
-            }
-
+        else { //send req to start new game            
+            const fromUser = { username: usersOnline[socket.token].username, rank: usersOnline[socket.token].rank }
             if (to.sockets.includes(socket.id)) //player vs himself
                 io.to(usersOnline[socket.token].sockets[0]).emit("ReqToStartGameWith", fromUser, true)
             else {
@@ -201,57 +195,47 @@ io.on('connection', async (socket) => {
         let from = findInUsersOnlineByName(fromUser.username)
         const to = usersOnline[socket.token]
 
-        if (res) {
+        if (res) { //setting new game
             from.room = roomNumber, to.room = roomNumber
-            rooms.push({ roomNumber, user1: socket.token, user2: from.token })
             from.sockets.forEach(suka => { io.sockets.connected[suka].join(roomNumber) })
             from.sockets.forEach(suka2 => io.to(suka2).emit('startGame', {
-                isBlack: false, names: [from.username, to.username], id: suka2
+                isBlack: false, names: [from.username, to.username],
             }))
             from.isBlack = false
             to.sockets.forEach(suka3 => {
                 if (!from.sockets.includes(suka3)) { //not send twice for 1 player against himself
-                    io.to(suka3).emit('startGame', { isBlack: true, names: [to.username, from.username], id: suka3 })
+                    io.to(suka3).emit('startGame', { isBlack: true, names: [to.username, from.username] })
                     to.isBlack = true
                 } else
                     from.isVsHimself = true
             })
             roomNumber++;
-            checkersLogic.setNewRoom(usersOnline[socket.token].room, new BoardManagement().getBoard())//board)
+            checkersLogic.setNewRoom(usersOnline[socket.token].room, new BoardManagement().getBoard())
         } else
             from.sockets.forEach(suka4 => io.to(suka4).emit('reqCanceld', to.username))
     })
 
     const handleSocketLeaveOrDisconnect = (socket) => {
-        reqControl.forEach(request => {
-            if (request.to == getTokenBySocketId(socket.id))
+        const socketToken = getTokenBySocketId(socket.id)
+        reqControl.forEach(request => { //delete req to/from, of the leaving socket
+            if (request.to == socketToken)
                 reqControl.delete(request)
         })
-        if (reqControl.get(getTokenBySocketId(socket.id)))
-            reqControl.delete(getTokenBySocketId(socket.id))
+        if (reqControl.get(socketToken))
+            reqControl.delete(socketToken)
+
         if (!usersOnline[socket.token])
             return
 
-        const room = usersOnline[socket.token].room;
+        const room = usersOnline[socket.token].room; //delete unused sockets
         if (usersOnline[socket.token].sockets.includes(socket.id))
             if (usersOnline[socket.token].sockets.indexOf(socket.id) > -1)
                 usersOnline[socket.token].sockets.splice(usersOnline[socket.token].sockets.indexOf(5), 1);
 
         io.of('/').in(room).clients((err, idsRes) => {
-            idsRes.forEach(id => {
-                let socketInRoom = io.sockets.connected[id]
-                reqControl.forEach(request => {
-                    if (request.to == getTokenBySocketId(id))
-                        reqControl.delete(request)
-                })
-                if (reqControl.get(getTokenBySocketId(id)))
-                    reqControl.delete(getTokenBySocketId(id))
-                if (socketInRoom.token == socket.token)
-                    socketInRoom.leave(room)
-            })
 
             const endGameState = checkersLogic.updateLeaveRoom(usersOnline[socket.token], room)
-            idsRes.forEach(id => {
+            idsRes.forEach(id => { // update user in room
                 if (endGameState)
                     io.to(id).emit('endGameUpdate', endGameState)
             })
@@ -263,7 +247,7 @@ io.on('connection', async (socket) => {
                             usersOnline[userTok].sockets.splice(usersOnline[userTok].sockets.indexOf(5), 1);
                 })
             }
-
+            //users not connected anymore, delete it, and send update to rest of the users
             if (usersOnline[socket.token] && usersOnline[socket.token].sockets.length == 0) {
                 delete usersOnline[socket.token]
                 Object.values(usersOnline).forEach(user =>
@@ -271,7 +255,6 @@ io.on('connection', async (socket) => {
                         users: Uti.getPublicUserData(usersOnline), userName: user.username
                     }
                     )))
-                // io.emit('usersUpdate', Uti.getPublicUserData(usersOnline))
             }
         })
     }
