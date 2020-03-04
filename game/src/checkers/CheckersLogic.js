@@ -183,7 +183,7 @@ class CheckersLogic {
         if (this.isDraw(this.gamesStatus[index]))
             return this.gamesStatus[index].endGamestate;
         this.isWin(this.gamesStatus[index], index);
-         this.gamesStatus[index].endGamestate.isWin = true////////////////////////////////////////////////////////////////////////////
+    //     this.gamesStatus[index].endGamestate.isWin = true////////////////////////////////////////////////////////////////////////////
         return this.gamesStatus[index].endGamestate;
     }
 
