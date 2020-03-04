@@ -3,23 +3,27 @@ const socket = io();
 
 const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 
-socket.on("usersUpdate", (users, error) => {
+socket.on("usersUpdate", ({ users, userName }) => {
     const html = Mustache.render(sidebarTemplate, {
         users
     })
     document.querySelector('#sidebar').innerHTML = html
     let allUsers = document.querySelectorAll('li');
 
-    for (let i = 0; i < allUsers.length; i++)
+    for (let i = 0; i < allUsers.length; i++) {
         allUsers[i].addEventListener("click", (info) => {
             const userName = info.target.innerText.split(' ')[0];
             socket.emit('sendReqToStartGameWith', userName, (error) => {
-                console.log("sendReqToStartGameWith  id: " + socket.id);
-
                 if (error)
                     alert(error)
             })
         })
+    }
+    allUsers.forEach(u => {
+        console.log((u));
+        if (u.firstElementChild.innerText.split(' ')[0] == userName)
+            u.firstElementChild.id = "userName"
+    })
 })
 
 socket.on('error', (errorMsg) => {
@@ -53,15 +57,15 @@ socket.on('startGame', ({ isBlack, names, id }) => {
     isUserColorblack = isBlack
 
     let iframe = document.createElement('iframe');
-    // iframe.setAttribute('src', "https://quiet-shore-40615.herokuapp.com/checkers/index.html");
-    iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
+    iframe.setAttribute('src', "https://quiet-shore-40615.herokuapp.com/checkers/index.html");
+    // iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
     document.getElementById("gameDiv").appendChild(iframe)
     iframe.className = 'embeddedPage'
 
     const userColor = document.createElement('div')
     window.parent.document.getElementById('gameDiv').appendChild(userColor)// socketID)
 
-    iframe.onload = function () {  
+    iframe.onload = function () {
         let page = document.getElementsByClassName("embeddedPage");
         let htmlDocument = page[0].contentWindow ? page[0].contentWindow.document : page[0].contentDocument
 

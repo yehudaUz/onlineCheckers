@@ -21,6 +21,9 @@
   },
   "devDependencies": {},
   "scripts": {
+    "start": "env-cmd -f ./config/dev.env node ./game/app.js"
+  },
+  "comments": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "env-cmd -f ./config/dev.env nodemon -e js,html,env,css ./game/app.js",
     "debug": "env-cmd -f ./config/dev.env nodemon --inspect ./game/app.js",

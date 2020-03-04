@@ -15,10 +15,19 @@ h1, h2, h3, h4, h5, h6, a {
   max-width: 500px;
 }
 
-.login-header, .signup-header {
+.login-header, .signup-header, .welcome-header {
   color: #fff;
   text-align: center;
-  font-size: 300%;
+  font-size: 200%;
+}
+
+.welcome-header {
+  color: #7FDBFF;
+  margin-bottom: 3%;
+  margin-top: 3%;
+}
+.signup-header {
+  margin-top: 3%;
 }
 
 /* .login-header h1 {
@@ -45,7 +54,7 @@ h1, h2, h3, h4, h5, h6, a {
   text-align: center;
 }
 
-.login input[type="text"], .login input[type="password"] , .signup input[type="text"], .signup input[type="password"] {
+.login input[type="text"], .login input[type="password"], .signup input[type="text"], .signup input[type="password"] {
   max-width: 400px;
   width: 80%;
   line-height: 3em;

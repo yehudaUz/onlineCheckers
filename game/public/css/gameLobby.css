@@ -1,12 +1,5 @@
 /* Sidebar Styles */
 
-/* .room-title {
-    font-weight: 400;
-    font-size: 22px;
-    background: #2c2f3a;
-    padding: 24px;
-} */
-
 body {
     background: url("/imgs/background2.jpg");
     margin: 0px;
@@ -30,15 +23,19 @@ body {
 
 .sidebar {
     height: 100vh;
-    color: white;
-    background: #333744;
+    color: lime;
+    background: black;
     width: 20%;
-    overflow-y: scroll
+    overflow-y: scroll;
 }
 
 h1 {
-    border-bottom: 10px solid #000;
+    border-bottom: 10px solid grey;
     text-align: center;
+}
+
+#userName {
+    background: green;
 }
 
 /*  game div   */

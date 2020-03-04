@@ -90,7 +90,12 @@ io.on('connection', async (socket) => {
                     isVsHimself: false
                 }
                 usersOnline[token] = userData
-                io.emit('usersUpdate', Uti.getPublicUserData(usersOnline))
+                Object.values(usersOnline).forEach(user =>
+                    user.sockets.forEach(socketId => io.to(socketId).emit('usersUpdate', {
+                        users: Uti.getPublicUserData(usersOnline), userName: user.username
+                    }
+                    )))
+                //io.emit('usersUpdate', Uti.getPublicUserData(usersOnline))
             }
         }
     })
@@ -187,7 +192,7 @@ io.on('connection', async (socket) => {
                 reqControl.set(socket.token, {
                     time: new Date(),
                     to: to.token
-                }) 
+                })
             }
         }
     })
@@ -261,7 +266,12 @@ io.on('connection', async (socket) => {
 
             if (usersOnline[socket.token] && usersOnline[socket.token].sockets.length == 0) {
                 delete usersOnline[socket.token]
-                io.emit('usersUpdate', Uti.getPublicUserData(usersOnline))
+                Object.values(usersOnline).forEach(user =>
+                    user.sockets.forEach(socketId => io.to(socketId).emit('usersUpdate', {
+                        users: Uti.getPublicUserData(usersOnline), userName: user.username
+                    }
+                    )))
+                // io.emit('usersUpdate', Uti.getPublicUserData(usersOnline))
             }
         })
     }

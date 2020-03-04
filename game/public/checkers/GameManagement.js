@@ -104,7 +104,7 @@ class GameManagement {
             this.graphics.renderPieces();
             addEventsToNewPics();
         })
-        
+
     }
 }
 
@@ -126,7 +126,7 @@ const finishGame = () => {
 
 const resignGame = () => {
     if (confirm("Are u sure u want to resign?????")) {
-        socket.emit("resign", (endGameState) => { handleEndGame(endGameState) })
+        socket.emit("resign");
     }
 }
 
@@ -159,8 +159,12 @@ const handleEndGame = (endGameState) => {
     }
 }
 
+let gameEnded = false
 socket.on('endGameUpdate', (endGameState) => {
-    handleEndGame(endGameState)
+    if (!gameEnded) {
+        gameEnded = true
+        handleEndGame(endGameState)
+    }
 })
 
 socket.on('opponentAsk4Draw', (callback) => {
