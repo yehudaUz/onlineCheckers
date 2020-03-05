@@ -55,15 +55,18 @@ socket.on('reqCanceld', (userName) => {
 let isUserColorblack
 socket.on('startGame', ({ isBlack, names }) => {
     isUserColorblack = isBlack
+    const userColor = document.createElement('div')
+    window.parent.document.getElementById('gameDiv').appendChild(userColor)
+    if (!isBlack)
+        userColor.id = "userColorWhite"
+    else
+        userColor.id = "userColorBlack"
 
     let iframe = document.createElement('iframe');
     // iframe.setAttribute('src', "https://quiet-shore-40615.herokuapp.com/checkers/index.html");
     iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
     document.getElementById("gameDiv").appendChild(iframe)
     iframe.className = 'embeddedPage'
-
-    const userColor = document.createElement('div')
-    window.parent.document.getElementById('gameDiv').appendChild(userColor)// socketID)
 
     iframe.onload = function () {
         let page = document.getElementsByClassName("embeddedPage");
@@ -83,9 +86,7 @@ socket.on('startGame', ({ isBlack, names }) => {
         if (!isBlack) {
             panel.after(nameTitle)
             game.prepend(nameTitle2)
-            userColor.id = "userColorWhite"
         } else {
-            userColor.id = "userColorBlack"
             panel.after(nameTitle2)
             game.prepend(nameTitle)
         }

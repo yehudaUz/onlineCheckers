@@ -97,7 +97,13 @@ class GameManagement {
         socket.emit('done')
 
         socket.on('opponentMove', ({ from, to, legalMoveState }) => {
-            this.boardManagement.makeMove(from, to, legalMoveState);
+            window.parent.document.getElementById('userColorWhite') ? this.isUserBlack = false : this.isUserBlack = true
+            if (!this.isUserBlack)
+                this.boardManagement.makeMove(from, to, legalMoveState);
+            else
+                this.boardManagement.makeMove(from, to, legalMoveState,true);
+
+            //     this.boardManagement.makeMove({ x: 7 - from.x, y: 7 - from.y }, { x: 7 - to.x, y: 7 - to.y }, legalMoveState);
             if (!legalMoveState.inMiddleSequence.is)
                 this.boardManagement.updateKingsIfNecessary(to);
             this.graphics.renderMessages(legalMoveState.message);

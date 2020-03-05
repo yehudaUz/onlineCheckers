@@ -42,9 +42,15 @@ class BoardManagement {
         return sb;
     }
 
-    makeMove(from, to, legalMoveState) {
-        this.symbolicBoard[to.y][to.x] = this.symbolicBoard[from.y][from.x]; 
-        this.symbolicBoard[from.y][from.x] = null;
+    makeMove(from, to, legalMoveState, isUserBlack) {
+        if (!isUserBlack) {
+            this.symbolicBoard[to.y][to.x] = this.symbolicBoard[from.y][from.x];
+            this.symbolicBoard[from.y][from.x] = null;
+        }
+        else {
+            this.symbolicBoard[7 - to.y][7 - to.x] = this.symbolicBoard[7 - from.y][7 - from.x];
+            this.symbolicBoard[7 - from.y][7 - from.x] = null;
+        }
         this.deleteEatenPieces(legalMoveState);
     }
 

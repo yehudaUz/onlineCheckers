@@ -11,6 +11,8 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+const _ = require('lodash');
+
 const port = process.env.PORT || 3000
 const routers = require('./src/routers')
 app.use(routers)

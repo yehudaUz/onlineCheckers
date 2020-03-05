@@ -1,22 +1,48 @@
 "use strict";
 class Graphics {
     constructor(symbolicBoard) {
+        window.parent.document.getElementById('userColorWhite') ? this.isUserBlack = false : this.isUserBlack = true
         this.symbolicBoard = symbolicBoard
+        //this.tempSymbolicBoard = symbolicBoard
+        if (this.isUserBlack) {
+            this.flipPiecesColor(this.symbolicBoard)
+          //  symbolicBoard = this.symbolicBoard
+        }
         this.divsBoard = setBoardSize(this.symbolicBoard);
         this.messages = [];
     }
-    renderPieces() {        
+
+    flipPiecesColor(sb) {
+        //let tempBoard = JSON.parse(JSON.stringify(this.symbolicBoard))
+//        let tempBoard = Object.assign( this.symbolicBoard);
+        let tempBoard  = _.cloneDeep(this.symbolicBoard);
+
+        for (let k = 0; k < this.symbolicBoard.length; k++) {
+            for (let l = 0; l < this.symbolicBoard.length; l++) {
+                // tempBoard[l][k] = this.symbolicBoard[7 - l][7 - k];
+                this.symbolicBoard[l][k] = tempBoard[7 - l][7 - k]
+                // this.divsBoard[k][l].setAttribute("x", 7 - l);
+                // this.divsBoard[k][l].setAttribute("y", 7 - k);
+            }
+        }
+        // this.symbolicBoard = tempBoard
+    }
+    renderPieces() {
         let allImages = document.querySelectorAll("img");
 
         for (var i = 0; i < allImages.length; i++)
             allImages[i].parentElement.removeChild(allImages[i]);
         for (let k = 0; k < this.symbolicBoard.length; k++) {
             for (let l = 0; l < this.symbolicBoard.length; l++) {
-                if (this.symbolicBoard[k][l] != null)
+                if (this.symbolicBoard[k][l] != null) {
+                    // if (!this.isUserBlack)
                     this.divsBoard[k][l].appendChild(this.symbolicBoard[k][l].img);
+                    // else
+                    //     this.divsBoard[7 - k][7 - l].appendChild(this.symbolicBoard[k][l].img);
+                }
             }
         }
-        
+
     }
     createAndRenderBoardAndPanel() {
         document.querySelector("body").style.visibility = "visible";
@@ -33,14 +59,23 @@ class Graphics {
         gameDiv.appendChild(gameBoardDiv);
         gameDiv.appendChild(panelDiv);
 
+
+
+
         for (let k = 0; k < this.symbolicBoard.length; k++) {
             gameBoardDiv.appendChild(document.createElement("br"));
             for (let l = 0; l < this.symbolicBoard.length; l++) {
                 this.divsBoard[k][l] = document.createElement("div");
-                isBlack = l != 0 ? !isBlack : isBlack; 
+                isBlack = l != 0 ? !isBlack : isBlack;
                 this.divsBoard[k][l].classList = isBlack ? "black" : "white";
-                this.divsBoard[k][l].setAttribute("x", l);
-                this.divsBoard[k][l].setAttribute("y", k);
+                if (this.isUserBlack) {
+                    this.divsBoard[k][l].setAttribute("x", 7 - l);
+                    this.divsBoard[k][l].setAttribute("y", 7 - k);
+                }
+                else {
+                    this.divsBoard[k][l].setAttribute("x", l);
+                    this.divsBoard[k][l].setAttribute("y", k);
+                }
                 gameBoardDiv.appendChild(this.divsBoard[k][l]);
             }
         }
