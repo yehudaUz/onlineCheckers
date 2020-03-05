@@ -1,0 +1,70 @@
+Date : 2020-03-05 21:14:26
+Directory : c:\Users\mudale\Desktop\checkers3
+Total : 32 files,  5741 codes, 35 comments, 284 blanks, all 6060 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| JSON       |          2 |      3,792 |          0 |          2 |      3,794 |
+| JavaScript |         19 |      1,511 |         26 |        214 |      1,751 |
+| CSS        |          4 |        266 |          3 |         42 |        311 |
+| HTML       |          7 |        172 |          6 |         26 |        204 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                      | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                         |         32 |      5,741 |         35 |        284 |      6,060 |
+| config                                                                    |          1 |         29 |          6 |          3 |         38 |
+| database                                                                  |          3 |        152 |         15 |         26 |        193 |
+| database\models                                                           |          1 |        127 |         15 |         22 |        164 |
+| emails                                                                    |          1 |         22 |          0 |          4 |         26 |
+| game                                                                      |         24 |      1,713 |         13 |        246 |      1,972 |
+| game\public                                                               |         17 |        899 |          4 |        140 |      1,043 |
+| game\public\checkers                                                      |          7 |        530 |          0 |         73 |        603 |
+| game\public\css                                                           |          3 |        157 |          3 |         24 |        184 |
+| game\src                                                                  |          5 |        524 |          8 |         70 |        602 |
+| game\src\checkers                                                         |          3 |        377 |          4 |         42 |        423 |
+| game\src\emails                                                           |          1 |         22 |          0 |          4 |         26 |
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                  | language   | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| c:\Users\mudale\Desktop\checkers3\config\signup.html                      | HTML       |         29 |          6 |          3 |         38 |
+| c:\Users\mudale\Desktop\checkers3\database\auth.js                        | JavaScript |         18 |          0 |          4 |         22 |
+| c:\Users\mudale\Desktop\checkers3\database\models\user.js                 | JavaScript |        127 |         15 |         22 |        164 |
+| c:\Users\mudale\Desktop\checkers3\database\mongoose.js                    | JavaScript |          7 |          0 |          0 |          7 |
+| c:\Users\mudale\Desktop\checkers3\ecosystem.config.js                     | JavaScript |         33 |          1 |          3 |         37 |
+| c:\Users\mudale\Desktop\checkers3\emails\account.js                       | JavaScript |         22 |          0 |          4 |         26 |
+| c:\Users\mudale\Desktop\checkers3\game\app.js                             | JavaScript |        267 |          1 |         34 |        302 |
+| c:\Users\mudale\Desktop\checkers3\game\public\checkers\BoardManagement.js | JavaScript |         93 |          0 |          9 |        102 |
+| c:\Users\mudale\Desktop\checkers3\game\public\checkers\CheckersPiece.js   | JavaScript |         12 |          0 |          0 |         12 |
+| c:\Users\mudale\Desktop\checkers3\game\public\checkers\GameManagement.js  | JavaScript |        160 |          0 |         27 |        187 |
+| c:\Users\mudale\Desktop\checkers3\game\public\checkers\Graphics.js        | JavaScript |         97 |          0 |         11 |        108 |
+| c:\Users\mudale\Desktop\checkers3\game\public\checkers\index.html         | HTML       |         17 |          0 |          3 |         20 |
+| c:\Users\mudale\Desktop\checkers3\game\public\checkers\style.css          | CSS        |        109 |          0 |         18 |        127 |
+| c:\Users\mudale\Desktop\checkers3\game\public\checkers\utilities.js       | JavaScript |         42 |          0 |          5 |         47 |
+| c:\Users\mudale\Desktop\checkers3\game\public\css\gameLobby.css           | CSS        |         41 |          2 |         10 |         53 |
+| c:\Users\mudale\Desktop\checkers3\game\public\css\styles.css              | CSS        |         96 |          1 |         14 |        111 |
+| c:\Users\mudale\Desktop\checkers3\game\public\css\transferPage.css        | CSS        |         20 |          0 |          0 |         20 |
+| c:\Users\mudale\Desktop\checkers3\game\public\game-lobby.html             | HTML       |         28 |          0 |          7 |         35 |
+| c:\Users\mudale\Desktop\checkers3\game\public\game-lobby.js               | JavaScript |         78 |          1 |         21 |        100 |
+| c:\Users\mudale\Desktop\checkers3\game\public\index.html                  | HTML       |         31 |          0 |          3 |         34 |
+| c:\Users\mudale\Desktop\checkers3\game\public\signup.html                 | HTML       |         29 |          0 |          3 |         32 |
+| c:\Users\mudale\Desktop\checkers3\game\public\start-game.html             | HTML       |         17 |          0 |          3 |         20 |
+| c:\Users\mudale\Desktop\checkers3\game\public\transferPage.html           | HTML       |         21 |          0 |          4 |         25 |
+| c:\Users\mudale\Desktop\checkers3\game\public\transferPage.js             | JavaScript |          8 |          0 |          2 |         10 |
+| c:\Users\mudale\Desktop\checkers3\game\src\checkers\BoardManagement.js    | JavaScript |         62 |          1 |         10 |         73 |
+| c:\Users\mudale\Desktop\checkers3\game\src\checkers\CheckersLogic.js      | JavaScript |        302 |          2 |         31 |        335 |
+| c:\Users\mudale\Desktop\checkers3\game\src\checkers\CheckersPiece.js      | JavaScript |         13 |          1 |          1 |         15 |
+| c:\Users\mudale\Desktop\checkers3\game\src\emails\emails.js               | JavaScript |         22 |          0 |          4 |         26 |
+| c:\Users\mudale\Desktop\checkers3\game\src\routers.js                     | JavaScript |        125 |          4 |         24 |        153 |
+| c:\Users\mudale\Desktop\checkers3\game\uti.js                             | JavaScript |         23 |          0 |          2 |         25 |
+| c:\Users\mudale\Desktop\checkers3\package-lock.json                       | JSON       |      3,751 |          0 |          1 |      3,752 |
+| c:\Users\mudale\Desktop\checkers3\package.json                            | JSON       |         41 |          0 |          1 |         42 |
+| Total                                                                     |            |      5,741 |         35 |        284 |      6,060 |
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
