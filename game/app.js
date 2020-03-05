@@ -190,6 +190,11 @@ io.on('connection', async (socket) => {
             const to = usersOnline[socket.token]
 
             if (res) { //setting new game
+                if (from.room || to.room) {
+                    from.sockets.forEach(so => io.to(so).emit('msg', "Sorry, u or him already set in a game."))
+                    to.sockets.forEach(so2 => io.to(so2).emit('msg', "Sorry, u or him already set in a game."))
+                    return
+                }
                 from.room = roomNumber, to.room = roomNumber
                 from.sockets.forEach(suka => { io.sockets.connected[suka].join(roomNumber) })
                 from.sockets.forEach(suka2 => io.to(suka2).emit('startGame', {
