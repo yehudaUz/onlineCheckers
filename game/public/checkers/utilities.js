@@ -13,7 +13,7 @@ function deleteFromDom(elmentType) {
     }
 };
 
-function getAllElementsFromPoint(x, y) {
+function getAllElementsFromPoint(x, y) { //important for drag and drop oporetion
     var elements = [];
     var display = [];
     var item = document.elementFromPoint(x, y);

@@ -47,7 +47,6 @@ class GameManagement {
             img.addEventListener("mouseup", (e) => {
                 e.preventDefault();
                 mouseDown = false;
-                console.log("game managmaent id: " + socket.id);
 
                 let elements, from, to;
                 try {

@@ -21,9 +21,9 @@ const initialBoardBlack = [
 ];
 
 class BoardManagement {
-    constructor() {
+    constructor() {//get user color
         window.parent.document.getElementById('userColorWhite') ? this.isUserBlack = false : this.isUserBlack = true
-        if (this.isUserBlack)
+        if (this.isUserBlack) //set board accordingly
             this.symbolicBoard = this.setSymbolicBoard(initialBoardBlack);
         else
             this.symbolicBoard = this.setSymbolicBoard(initialBoardWhite);
@@ -60,14 +60,14 @@ class BoardManagement {
             this.symbolicBoard[to.y][to.x] = this.symbolicBoard[from.y][from.x];
             this.symbolicBoard[from.y][from.x] = null;
         }
-        else {
+        else { //black user is oopsite down so flipping it
             this.symbolicBoard[7 - to.y][7 - to.x] = this.symbolicBoard[7 - from.y][7 - from.x];
             this.symbolicBoard[7 - from.y][7 - from.x] = null;
         }
         this.deleteEatenPieces(legalMoveState);
     }
 
-    updateKingsIfNecessary(to) {
+    updateKingsIfNecessary(to) { //if pawn become king update it
         if (!this.isUserBlack) {
             if (to.y == this.symbolicBoard.length - 1 && this.symbolicBoard[to.y][to.x].isBlack && !this.symbolicBoard[to.y][to.x].isKing) {
                 this.symbolicBoard[to.y][to.x] = new CheckersPiece(this.symbolicBoard[to.y][to.x].isBlack, true);
@@ -88,7 +88,7 @@ class BoardManagement {
         if (legalMoveState.arrOfPiecesToDelete.length > 0)
             for (let k = 0; k < legalMoveState.arrOfPiecesToDelete.length; k++) {
                 let pos = legalMoveState.arrOfPiecesToDelete[k];
-                if (this.isUserBlack)
+                if (this.isUserBlack) //same here again, black is flipped
                     this.symbolicBoard[7 - pos.y][7 - pos.x] = null;
                 else
                     this.symbolicBoard[pos.y][pos.x] = null;

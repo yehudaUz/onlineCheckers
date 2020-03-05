@@ -43,10 +43,7 @@ h1 {
 .gameDiv {
     height: 100%;
     float: right;
-    /* color: white; */
-    /* background: #333744; */
     width: 80%;
-    /* overflow-y: scroll */
 }
 
 .embeddedPage {

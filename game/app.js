@@ -11,7 +11,6 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-const _ = require('lodash');
 
 const port = process.env.PORT || 3000
 const routers = require('./src/routers')
@@ -24,11 +23,8 @@ app.use(function (req, res, next) {
     next()
 });
 
-
 const server = http.createServer(app)
 const io = socketio(server)
-// io.eio.pingTimeout = 1200000; // 2 minutes
-// io.eio.pingInterval = 50000;
 
 const User = require('../database/models/user')
 const Uti = require('./uti')
@@ -37,7 +33,6 @@ const BoardManagement = require('./src/checkers/BoardManagement.js')
 
 let checkersLogic = new Checkers()
 let boardManagement = new BoardManagement()
-
 let reqControl = new Map()
 let usersOnline = []
 let roomNumber = 0;
@@ -45,8 +40,6 @@ let roomNumber = 0;
 
 io.on('connection', async (socket) => {
     try {
-        console.log('New WebSocket connection')
-
         socket.use(async function (packet, next) {
             const token = Uti.parseCookies(socket.handshake);
             const user = await User.findOne({
@@ -68,7 +61,6 @@ io.on('connection', async (socket) => {
             } else
                 next()
         })
-
 
         socket.on('login', async () => {
             const token = Uti.parseCookies(socket.handshake);
@@ -130,7 +122,6 @@ io.on('connection', async (socket) => {
         }
 
         socket.on('isMoveTotalLegal', ({ from, to }, callback) => {
-            console.log(usersOnline);
             const room = usersOnline[socket.token].room;
             const legalMoveState = checkersLogic.isMoveTotalLegal(from, to, room, usersOnline[socket.token])
             if (legalMoveState.is) {
@@ -236,7 +227,6 @@ io.on('connection', async (socket) => {
                     usersOnline[socket.token].sockets.splice(usersOnline[socket.token].sockets.indexOf(5), 1);
 
             io.of('/').in(room).clients((err, idsRes) => {
-
                 const endGameState = checkersLogic.updateLeaveRoom(usersOnline[socket.token], room)
                 idsRes.forEach(id => { // update user in room
                     if (endGameState)

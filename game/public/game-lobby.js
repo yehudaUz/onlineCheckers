@@ -20,7 +20,6 @@ socket.on("usersUpdate", ({ users, userName }) => {
         })
     }
     allUsers.forEach(u => {
-        console.log((u));
         if (u.firstElementChild.innerText.split(' ')[0] == userName)
             u.firstElementChild.id = "userName"
     })
@@ -52,9 +51,7 @@ socket.on('reqCanceld', (userName) => {
     alert("Unfortunately " + userName + " is decline your offer to play :(\nTry with another user :)")
 })
 
-let isUserColorblack
 socket.on('startGame', ({ isBlack, names }) => {
-    isUserColorblack = isBlack
     const userColor = document.createElement('div')
     window.parent.document.getElementById('gameDiv').appendChild(userColor)
     if (!isBlack)
@@ -83,13 +80,8 @@ socket.on('startGame', ({ isBlack, names }) => {
         const panel = htmlDocument.getElementById("panel")
         const game = htmlDocument.getElementById("game")
 
-    //    if (!isBlack) {
-            panel.after(nameTitle)
-            game.prepend(nameTitle2)
-        // } else {
-        //     panel.after(nameTitle2)
-        //     game.prepend(nameTitle)
-        // }
+        panel.after(nameTitle)
+        game.prepend(nameTitle2)
     }
 })
 
@@ -99,8 +91,7 @@ function removeIframe() {
 }
 
 const login = () => {
-    socket.emit('login', () => {
-    })
+    socket.emit('login', () => { })
 }
 
 login()

@@ -9,6 +9,7 @@ const router = new express.Router()
 require('../../database/mongoose')
 
 process.on('uncaughtException', (err, origin) => {
+    //mail.send("me",{err,origin})
     console.log(err)
     process.exit(1)
 });
@@ -31,14 +32,10 @@ router.post('/signup', async (req, res) => {
     }
 })
 
-
 router.post('/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.username, req.body.password)
         const token = await user.generateAuthToken()
-        // console.log("token: " + token + "\nUser: " + user);
-        // res.cookie('JudaAuthName', user.name)
-        // res.cookie('JudaAuthEmail', user.email)
         res.cookie('JudaAuthToken', token)
         res.redirect("game-lobby.html")
     } catch (e) {

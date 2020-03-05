@@ -1,5 +1,4 @@
 "use strict";
-// let _ = require('lodash');
 
 class Graphics {
     constructor(symbolicBoard) {
@@ -17,15 +16,13 @@ class Graphics {
         for (let k = 0; k < this.symbolicBoard.length; k++) {
             for (let l = 0; l < this.symbolicBoard.length; l++) {
                 if (this.symbolicBoard[k][l] != null) {
-                    // if (!this.isUserBlack)
                     this.divsBoard[k][l].appendChild(this.symbolicBoard[k][l].img);
-                    // else
-                    //     this.divsBoard[7 - k][7 - l].appendChild(this.symbolicBoard[k][l].img);
                 }
             }
         }
 
     }
+
     createAndRenderBoardAndPanel() {
         document.querySelector("body").style.visibility = "visible";
         let isBlack = false;
@@ -41,16 +38,13 @@ class Graphics {
         gameDiv.appendChild(gameBoardDiv);
         gameDiv.appendChild(panelDiv);
 
-
-
-
         for (let k = 0; k < this.symbolicBoard.length; k++) {
             gameBoardDiv.appendChild(document.createElement("br"));
             for (let l = 0; l < this.symbolicBoard.length; l++) {
                 this.divsBoard[k][l] = document.createElement("div");
-                isBlack = l != 0 ? !isBlack : isBlack;
-                this.divsBoard[k][l].classList = isBlack ? "black" : "white";
-                if (this.isUserBlack) {
+                isBlack = l != 0 ? !isBlack : isBlack; //set squares color
+                this.divsBoard[k][l].classList = isBlack ? "black" : "white"; // same
+                if (this.isUserBlack) { //setting x and y values for divs, flipping it for black user
                     this.divsBoard[k][l].setAttribute("x", 7 - l);
                     this.divsBoard[k][l].setAttribute("y", 7 - k);
                 }
@@ -68,6 +62,7 @@ class Graphics {
         gameBoardDiv.appendChild(messages);
         this.renderMessages(["Welocme!!!"]);
     }
+
     renderMovingMouseDown(currentImg, mouseMoveEvent) {
         currentImg.style.position = "absolute";
         currentImg.style.height = "5vw";
@@ -76,6 +71,7 @@ class Graphics {
         currentImg.style.left = mouseMoveEvent.clientX - currentImg.width / 2 + 'px';
         currentImg.style.top = mouseMoveEvent.clientY - currentImg.height / 2 + 'px';
     }
+
     renderMessages(messages) {
         for (let i = 0; i < messages.length; i++) {
             document.getElementById("messages").innerText = messages[i];
@@ -106,7 +102,6 @@ class Panel {
     makeButton(name, action) {
         let newButton = document.createElement("button");
         newButton.id = name;
-        //newButton.addEventListener("click", action);
         newButton.innerText = newButton.id.toUpperCase();
         this.panelDiv.appendChild(newButton);
     }

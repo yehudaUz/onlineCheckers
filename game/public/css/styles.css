@@ -30,9 +30,6 @@ h1, h2, h3, h4, h5, h6, a {
   margin-top: 3%;
 }
 
-/* .login-header h1 {
-     text-shadow: 0px 5px 15px #000; */
-
 .login-form, .signup-form {
   border: .5px solid #fff;
   background: #4facff;

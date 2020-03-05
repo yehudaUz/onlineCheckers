@@ -2,21 +2,21 @@ const sgMail = require('@sendgrid/mail')
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-const sendWelcomeEmail = (email, name) => {
+const sendWelcomeEmail = (email, name,code) => {
     sgMail.send({
         to: email,
-        from: 'andrew@mead.io',
-        subject: 'Thanks for joining in!',
-        text: `Welcome to the app, ${name}. Let me know how you get along with the app.`
+        from: 'mudale@onlineCheckers.com',
+        subject: 'Confirmation code to CheckersOnline!',
+        text: `Welcome to the game, ${name}. Your confirmation code is: ${code}.`
     })
 }
 
 const sendCancelationEmail = (email, name) => {
     sgMail.send({
         to: email,
-        from: 'andrew@mead.io',
-        subject: 'Sorry to see you go!',
-        text: `Goodbye, ${name}. I hope to see you back sometime soon.`
+        from: 'mudale@onlineCheckers.com',
+        subject: 'Piece brother',
+        text: `Go with god.`
     })
 }
 
