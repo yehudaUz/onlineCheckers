@@ -22,7 +22,7 @@ router.post('/signup', async (req, res) => {
         res.status(201).redirect('./transferPage.html?msg=Signup complete succeefuly!!!')
 
     } catch (e) {
-        res.status(400).send(e)
+        return res.status(400).redirect('./transferPage.html?msg=Error, password too short or email invalid!')
     }
 })
 

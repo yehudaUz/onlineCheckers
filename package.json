@@ -11,6 +11,7 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "loadash": "^1.0.0",
+    "lodash": "^4.17.15",
     "mongodb": "^3.5.4",
     "mongoose": "^5.8.11",
     "multer": "^1.4.2",
@@ -22,16 +23,12 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "env-cmd -f ./config/dev.env nodemon -e js,html,env,css ./game/app.js",
-    "debug": "env-cmd -f ./config/dev.env nodemon --inspect ./game/app.js",
     "start": "env-cmd -f ./config/dev.env node ./game/app.js"
   },
   "comments": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "env-cmd -f ./config/dev.env nodemon -e js,html,env,css ./game/app.js",
     "debug": "env-cmd -f ./config/dev.env nodemon --inspect ./game/app.js",
-    "start": "env-cmd -f ./config/dev.env node ./game/app.js"
   },
   "keywords": [],
   "author": "",

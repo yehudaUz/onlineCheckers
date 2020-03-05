@@ -63,8 +63,8 @@ socket.on('startGame', ({ isBlack, names }) => {
         userColor.id = "userColorBlack"
 
     let iframe = document.createElement('iframe');
-    // iframe.setAttribute('src', "https://quiet-shore-40615.herokuapp.com/checkers/index.html");
-    iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
+    iframe.setAttribute('src', "https://quiet-shore-40615.herokuapp.com/checkers/index.html");
+    // iframe.setAttribute('src', "http://localhost:3000/checkers/index.html");
     document.getElementById("gameDiv").appendChild(iframe)
     iframe.className = 'embeddedPage'
 

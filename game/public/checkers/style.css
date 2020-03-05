@@ -49,6 +49,7 @@ br {
     display: table-cell;
     margin: auto;
     vertical-align: top;
+    line-height: 0;
 }
 
 html {

@@ -1,32 +1,14 @@
 "use strict";
+// let _ = require('lodash');
+
 class Graphics {
     constructor(symbolicBoard) {
         window.parent.document.getElementById('userColorWhite') ? this.isUserBlack = false : this.isUserBlack = true
         this.symbolicBoard = symbolicBoard
-        //this.tempSymbolicBoard = symbolicBoard
-        if (this.isUserBlack) {
-            this.flipPiecesColor(this.symbolicBoard)
-          //  symbolicBoard = this.symbolicBoard
-        }
         this.divsBoard = setBoardSize(this.symbolicBoard);
         this.messages = [];
     }
 
-    flipPiecesColor(sb) {
-        //let tempBoard = JSON.parse(JSON.stringify(this.symbolicBoard))
-//        let tempBoard = Object.assign( this.symbolicBoard);
-        let tempBoard  = _.cloneDeep(this.symbolicBoard);
-
-        for (let k = 0; k < this.symbolicBoard.length; k++) {
-            for (let l = 0; l < this.symbolicBoard.length; l++) {
-                // tempBoard[l][k] = this.symbolicBoard[7 - l][7 - k];
-                this.symbolicBoard[l][k] = tempBoard[7 - l][7 - k]
-                // this.divsBoard[k][l].setAttribute("x", 7 - l);
-                // this.divsBoard[k][l].setAttribute("y", 7 - k);
-            }
-        }
-        // this.symbolicBoard = tempBoard
-    }
     renderPieces() {
         let allImages = document.querySelectorAll("img");
 

@@ -1,5 +1,5 @@
 "use strict";
-const initialBoard = [
+const initialBoardWhite = [
     0, 1, 0, 1, 0, 1, 0, 1,
     1, 0, 1, 0, 1, 0, 1, 0,
     0, 1, 0, 1, 0, 1, 0, 1,
@@ -9,11 +9,24 @@ const initialBoard = [
     0, 2, 0, 2, 0, 2, 0, 2,
     2, 0, 2, 0, 2, 0, 2, 0
 ];
+const initialBoardBlack = [
+    0, 2, 0, 2, 0, 2, 0, 2,
+    2, 0, 2, 0, 2, 0, 2, 0,
+    0, 2, 0, 2, 0, 2, 0, 2,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 1, 0, 1, 0, 1, 0,
+    0, 1, 0, 1, 0, 1, 0, 1,
+    1, 0, 1, 0, 1, 0, 1, 0
+];
 
 class BoardManagement {
-
     constructor() {
-        this.symbolicBoard = this.setSymbolicBoard(initialBoard);
+        window.parent.document.getElementById('userColorWhite') ? this.isUserBlack = false : this.isUserBlack = true
+        if (this.isUserBlack)
+            this.symbolicBoard = this.setSymbolicBoard(initialBoardBlack);
+        else
+            this.symbolicBoard = this.setSymbolicBoard(initialBoardWhite);
     }
 
     setBoardSize(arr) {
@@ -42,8 +55,8 @@ class BoardManagement {
         return sb;
     }
 
-    makeMove(from, to, legalMoveState, isUserBlack) {
-        if (!isUserBlack) {
+    makeMove(from, to, legalMoveState) {
+        if (!this.isUserBlack) {
             this.symbolicBoard[to.y][to.x] = this.symbolicBoard[from.y][from.x];
             this.symbolicBoard[from.y][from.x] = null;
         }
@@ -55,18 +68,30 @@ class BoardManagement {
     }
 
     updateKingsIfNecessary(to) {
-        if (to.y == this.symbolicBoard.length - 1 && this.symbolicBoard[to.y][to.x].isBlack && !this.symbolicBoard[to.y][to.x].isKing) {
-            this.symbolicBoard[to.y][to.x] = new CheckersPiece(this.symbolicBoard[to.y][to.x].isBlack, true);
-        } else if (to.y == 0 && !this.symbolicBoard[to.y][to.x].isBlack && !this.symbolicBoard[to.y][to.x].isKing) {
-            this.symbolicBoard[to.y][to.x] = new CheckersPiece(this.symbolicBoard[to.y][to.x].isBlack, true);
+        if (!this.isUserBlack) {
+            if (to.y == this.symbolicBoard.length - 1 && this.symbolicBoard[to.y][to.x].isBlack && !this.symbolicBoard[to.y][to.x].isKing) {
+                this.symbolicBoard[to.y][to.x] = new CheckersPiece(this.symbolicBoard[to.y][to.x].isBlack, true);
+            } else if (to.y == 0 && !this.symbolicBoard[to.y][to.x].isBlack && !this.symbolicBoard[to.y][to.x].isKing) {
+                this.symbolicBoard[to.y][to.x] = new CheckersPiece(this.symbolicBoard[to.y][to.x].isBlack, true);
+            }
+        } else {
+            if (to.y == this.symbolicBoard.length - 1 && this.symbolicBoard[7 - to.y][7 - to.x].isBlack && !this.symbolicBoard[7 - to.y][7 - to.x].isKing) {
+                this.symbolicBoard[7 - to.y][7 - to.x] = new CheckersPiece(true, true);
+            } else if (to.y == 0 && !this.symbolicBoard[7 - to.y][7-to.x].isBlack && !this.symbolicBoard[7 - to.y][7 - to.x].isKing) {
+                this.symbolicBoard[7 - to.y][7 - to.x] = new CheckersPiece(false, true);
+            }
         }
     }
+
 
     deleteEatenPieces(legalMoveState) {
         if (legalMoveState.arrOfPiecesToDelete.length > 0)
             for (let k = 0; k < legalMoveState.arrOfPiecesToDelete.length; k++) {
                 let pos = legalMoveState.arrOfPiecesToDelete[k];
-                this.symbolicBoard[pos.y][pos.x] = null;
+                if (this.isUserBlack)
+                    this.symbolicBoard[7 - pos.y][7 - pos.x] = null;
+                else
+                    this.symbolicBoard[pos.y][pos.x] = null;
             }
     }
 
