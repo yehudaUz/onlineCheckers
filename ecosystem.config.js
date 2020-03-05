@@ -17,7 +17,7 @@ module.exports = {
     },
     env_production: {
       SENDGRID_API_KEY: "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",
-      MONGODB_URL: "mongodb + srv://mudale:dualcore@cluster0-lgfig.mongodb.net/user-database",
+      MONGODB_URL: "mongodb+srv://mudale:dualcore@cluster0-lgfig.mongodb.net/user-database",
       JWT_SECRET: "kjh23!@$2#lkasDASvBdd",
       NODE_ENV: 'production'
     }
