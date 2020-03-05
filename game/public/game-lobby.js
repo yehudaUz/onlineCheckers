@@ -83,13 +83,13 @@ socket.on('startGame', ({ isBlack, names }) => {
         const panel = htmlDocument.getElementById("panel")
         const game = htmlDocument.getElementById("game")
 
-        if (!isBlack) {
+    //    if (!isBlack) {
             panel.after(nameTitle)
             game.prepend(nameTitle2)
-        } else {
-            panel.after(nameTitle2)
-            game.prepend(nameTitle)
-        }
+        // } else {
+        //     panel.after(nameTitle2)
+        //     game.prepend(nameTitle)
+        // }
     }
 })
 

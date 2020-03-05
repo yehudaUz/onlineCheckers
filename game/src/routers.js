@@ -8,6 +8,11 @@ const { sendWelcomeEmail, sendCancelationEmail } = require('../../emails/account
 const router = new express.Router()
 require('../../database/mongoose')
 
+process.on('uncaughtException', (err, origin) => {
+    console.log(err)
+    process.exit(1)
+});
+
 router.post('/signup', async (req, res) => {
     const user = new User(req.body)
     try {
