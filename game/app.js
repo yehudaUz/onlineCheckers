@@ -176,7 +176,7 @@ io.on('connection', async (socket) => {
                 if (to.sockets.includes(socket.id)) //player vs himself
                     io.to(usersOnline[socket.token].sockets[0]).emit("ReqToStartGameWith", fromUser, true)
                 else {
-                    to.sockets.forEach(suka => io.to(suka).emit("ReqToStartGameWith", fromUser, false));
+                    to.sockets.forEach(socketId => io.to(socketId).emit("ReqToStartGameWith", fromUser, false));
                     reqControl.set(socket.token, {
                         time: new Date(),
                         to: to.token
@@ -196,22 +196,24 @@ io.on('connection', async (socket) => {
                     return
                 }
                 from.room = roomNumber, to.room = roomNumber
-                from.sockets.forEach(suka => { io.sockets.connected[suka].join(roomNumber) })
-                from.sockets.forEach(suka2 => io.to(suka2).emit('startGame', {
+                from.sockets.forEach(socketId => { io.sockets.connected[socketId].join(roomNumber) })
+                from.sockets.forEach(socketId => io.to(socketId).emit('startGame', {
                     isBlack: false, names: [from.username, to.username],
                 }))
                 from.isBlack = false
-                to.sockets.forEach(suka3 => {
-                    if (!from.sockets.includes(suka3)) { //not send twice for 1 player against himself
-                        io.to(suka3).emit('startGame', { isBlack: true, names: [to.username, from.username] })
+                to.sockets.forEach(socketId => {
+                    if (!from.sockets.includes(socketId)) { //not send twice for 1 player against himself
+                        io.to(socketId).emit('startGame', { isBlack: true, names: [to.username, from.username] })
                         to.isBlack = true
                     } else
                         from.isVsHimself = true
                 })
-                roomNumber++;
                 checkersLogic.setNewRoom(usersOnline[socket.token].room, new BoardManagement().getBoard())
+                roomNumber++;
+                if (roomNumber == Number.MAX_SAFE_INTEGER)
+                    roomNumber = 0
             } else
-                from.sockets.forEach(suka4 => io.to(suka4).emit('reqCanceld', to.username))
+                from.sockets.forEach(socketId => io.to(socketId).emit('reqCanceld', to.username))
         })
 
         const handleSocketLeaveOrDisconnect = (socket) => {
