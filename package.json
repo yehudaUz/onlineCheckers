@@ -20,7 +20,7 @@
     "sendgrid": "^5.2.3",
     "sharp": "^0.24.0",
     "socket.io": "^2.3.0",
-    "validator": "^12.2.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {},
   "scripts": {
